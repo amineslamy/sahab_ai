@@ -580,7 +580,7 @@ GraphMem is a knowledge graph memory system.
 Run the following command:
 
 ` + "```bash" + `
-go get github.com/graphmem/graphmem-go
+go get github.com/flancast90/GraphMem-go
 ` + "```" + `
 
 ## Usage

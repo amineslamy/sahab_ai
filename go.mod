@@ -1,4 +1,4 @@
-module github.com/graphmem/graphmem-go
+module github.com/flancast90/GraphMem-go
 
 go 1.22.0
 

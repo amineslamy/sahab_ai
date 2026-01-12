@@ -2,8 +2,8 @@
 
 A Go implementation of GraphMem - a knowledge graph-based memory system for AI applications.
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/graphmem/graphmem-go)](https://goreportcard.com/report/github.com/graphmem/graphmem-go)
-[![Go Reference](https://pkg.go.dev/badge/github.com/graphmem/graphmem-go.svg)](https://pkg.go.dev/github.com/graphmem/graphmem-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/flancast90/GraphMem-go)](https://goreportcard.com/report/github.com/flancast90/GraphMem-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/flancast90/GraphMem-go.svg)](https://pkg.go.dev/github.com/flancast90/GraphMem-go)
 
 ## Features
 
@@ -18,7 +18,7 @@ A Go implementation of GraphMem - a knowledge graph-based memory system for AI a
 ## Installation
 
 ```bash
-go get github.com/graphmem/graphmem-go
+go get github.com/flancast90/GraphMem-go
 ```
 
 ## Quick Start
@@ -30,7 +30,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/graphmem/graphmem-go/pkg/graphmem"
+    "github.com/flancast90/GraphMem-go/pkg/graphmem"
 )
 
 func main() {
