@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with go test -c
+*.test
+
+# Output of coverage
+coverage.out
+coverage.html
+*.coverprofile
+
+# Dependency directories
+vendor/
+
+# Environment files (contain secrets)
+.env
+.env.*
+!.env.example
+!docker.env.example
+
+# Documentation
+*.md
+!README.md
+
+# Python reference (not needed in Go container)
+python-ref/
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+
+# Local development database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+

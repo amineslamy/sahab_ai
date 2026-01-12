@@ -1,97 +1,170 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# =============================================================================
+# Go
+# =============================================================================
 
-# C extensions
+# Binaries
+*.exe
+*.exe~
+*.dll
 *.so
+*.dylib
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Test binaries
+*.test
 
-# PyInstaller
-*.manifest
-*.spec
+# Output of go coverage
+*.out
+*.coverprofile
+coverage.html
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Go workspace file
+go.work
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
+# Vendor directory (if not committing dependencies)
+# vendor/
 
-# Translations
-*.mo
-*.pot
+# =============================================================================
+# Environment & Secrets
+# =============================================================================
 
-# Environments
+# Environment files (contain API keys and secrets)
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+.env.*
+!.env.example
+docker.env
+!docker.env.example
 
-# IDEs
-.idea/
+# =============================================================================
+# IDE & Editors
+# =============================================================================
+
+# VS Code
 .vscode/
+*.code-workspace
+
+# JetBrains (GoLand, IntelliJ)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
 *.swp
 *.swo
 *~
+.netrwhist
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Emacs
+*~
+\#*\#
+.#*
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
 
-# OS
+# =============================================================================
+# OS Files
+# =============================================================================
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Paper (not for distribution)
-paper/
-PAPER.md
-eval_graphmem.db_cache.db
-eval_graphmem.db
+# Linux
+*~
+
+# =============================================================================
+# Database & Storage
+# =============================================================================
+
+# SQLite / Turso local files
 *.db
-*.db-*
-evaluation/results/
-synthetic_results*.json
-final_results.json
-benchmark_reference/
-evaluation/data/memory_agent_bench_sample.json
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
 
-# Test files with credentials
-test_persistence_full.py
-test_turso_reuse.py
-local_config.py
+# Neo4j local data
+neo4j/
+data/
+
+# =============================================================================
+# Docker
+# =============================================================================
+
+# Docker Compose override (local customizations)
+docker-compose.override.yml
+
+# =============================================================================
+# Logs & Temporary Files
+# =============================================================================
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Cache directories
+.cache/
+
+# =============================================================================
+# Build & Distribution
+# =============================================================================
+
+# Build output
+bin/
+dist/
+build/
+
+# =============================================================================
+# Testing
+# =============================================================================
+
+# Test output
+testdata/output/
+*.test.json
+
+# Benchmark results
+*.bench
+
+# =============================================================================
+# Documentation
+# =============================================================================
+
+# Generated docs
+docs/_build/
+site/
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+
+# Backup files
+*.bak
+*.backup
+
+# Debug files
+debug
+*.debug
+
+# Profile data
+*.prof
+*.pprof
+cpu.out
+mem.out
+

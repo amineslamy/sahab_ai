@@ -1,0 +1,239 @@
+# GraphMem-Go Docker Compose
+# Full stack with optional local services
+#
+# Usage:
+#   # Start all services (local mode)
+#   docker-compose up -d
+#
+#   # Run integration tests against local services
+#   docker-compose --profile test up --abort-on-container-exit
+#
+#   # Use hosted services (set in .env file)
+#   docker-compose --profile minimal up -d
+#
+#   # Stop all services
+#   docker-compose down -v
+
+services:
+  # ===========================================================================
+  # Neo4j - Graph Database
+  # ===========================================================================
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: graphmem-neo4j
+    profiles:
+      - local
+      - full
+      - test
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-graphmem_password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      # Memory settings for development
+      - NEO4J_server_memory_heap_initial__size=512m
+      - NEO4J_server_memory_heap_max__size=1G
+      - NEO4J_server_memory_pagecache_size=512m
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"   # HTTP
+      - "${NEO4J_BOLT_PORT:-7687}:7687"   # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_plugins:/plugins
+    networks:
+      - graphmem-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ===========================================================================
+  # Redis - Caching Layer
+  # ===========================================================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: graphmem-redis
+    profiles:
+      - local
+      - full
+      - test
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - graphmem-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # LibSQL/Turso - SQLite-compatible Database
+  # ===========================================================================
+  libsql:
+    image: ghcr.io/tursodatabase/libsql-server:latest
+    container_name: graphmem-libsql
+    profiles:
+      - local
+      - full
+      - test
+    ports:
+      - "${LIBSQL_PORT:-8080}:8080"      # HTTP API
+      - "${LIBSQL_GRPC_PORT:-5001}:5001" # gRPC
+    volumes:
+      - libsql_data:/var/lib/sqld
+    networks:
+      - graphmem-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ===========================================================================
+  # Ollama - Local LLM (optional)
+  # ===========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: graphmem-ollama
+    profiles:
+      - local-llm
+      - full
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - graphmem-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Fallback for systems without GPU
+    # Remove the deploy section above if no GPU available
+
+  # ===========================================================================
+  # GraphMem Application
+  # ===========================================================================
+  graphmem:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: graphmem-app
+    profiles:
+      - app
+      - full
+    environment:
+      # LLM Configuration (use hosted by default)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      
+      # Storage Configuration
+      # Set USE_LOCAL_SERVICES=true to use containerized services
+      # Set USE_LOCAL_SERVICES=false to use hosted services (configure URLs below)
+      - USE_LOCAL_SERVICES=${USE_LOCAL_SERVICES:-true}
+      
+      # Neo4j - Local or Hosted
+      - NEO4J_URI=${NEO4J_URI:-bolt://neo4j:7687}
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-graphmem_password}
+      
+      # Redis - Local or Hosted
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      
+      # Turso/LibSQL - Local or Hosted
+      - TURSO_DATABASE_URL=${TURSO_DATABASE_URL:-http://libsql:8080}
+      - TURSO_AUTH_TOKEN=${TURSO_AUTH_TOKEN:-}
+      - TURSO_LOCAL_PATH=${TURSO_LOCAL_PATH:-}
+    ports:
+      - "${APP_PORT:-8081}:8080"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      libsql:
+        condition: service_healthy
+    networks:
+      - graphmem-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Integration Test Runner
+  # ===========================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: integration-tests
+    container_name: graphmem-tests
+    profiles:
+      - test
+    environment:
+      # Test flags
+      - RUN_INTEGRATION_TESTS=true
+      - RUN_LLM_TESTS=${RUN_LLM_TESTS:-false}
+      - RUN_NEO4J_TESTS=true
+      - RUN_REDIS_TESTS=true
+      - RUN_TURSO_TESTS=true
+      
+      # LLM Configuration (optional for tests)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      
+      # Local service URLs
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=graphmem_password
+      - REDIS_URL=redis://redis:6379
+      - TURSO_DATABASE_URL=http://libsql:8080
+      
+      # Service hostnames for wait script
+      - NEO4J_HOST=neo4j
+      - NEO4J_PORT=7687
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LIBSQL_HOST=libsql
+      - LIBSQL_PORT=8080
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      libsql:
+        condition: service_healthy
+    networks:
+      - graphmem-network
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  graphmem-network:
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_plugins:
+  redis_data:
+  libsql_data:
+  ollama_data:
+

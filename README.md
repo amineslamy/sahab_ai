@@ -1,1094 +1,364 @@
-# 🧠 GraphMem
+# GraphMem-Go
 
-## **The Human Brain for Your AI Agents**
+A Go implementation of GraphMem - a knowledge graph-based memory system for AI applications.
 
-[![PyPI](https://img.shields.io/pypi/v/agentic-graph-mem.svg)](https://pypi.org/project/agentic-graph-mem/)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/badge/github-Al--aminI/GraphMem-blue.svg)](https://github.com/Al-aminI/GraphMem)
+[![Go Report Card](https://goreportcard.com/badge/github.com/graphmem/graphmem-go)](https://goreportcard.com/report/github.com/graphmem/graphmem-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/graphmem/graphmem-go.svg)](https://pkg.go.dev/github.com/graphmem/graphmem-go)
 
-> **"Memory is the treasury and guardian of all things."** — Cicero
+## Features
 
-GraphMem is the **first memory system that thinks like a human brain**. It doesn't just store data—it **forgets**, **consolidates**, **prioritizes**, and **evolves** exactly like biological memory does.
+- **Knowledge Graph Memory**: Extracts entities and relationships from text using LLMs
+- **Entity Resolution**: Deduplicates and merges similar entities using semantic similarity
+- **Memory Evolution**: Implements the forgetting curve with consolidation, decay, and reinforcement
+- **Temporal Validity**: Tracks relationships with valid_from and valid_until timestamps
+- **Multi-tenant Isolation**: Supports per-user/per-session memory isolation
+- **PageRank Importance**: Uses graph centrality for memory importance scoring
+- **Hybrid Retrieval**: Combines exact match, semantic search, and graph traversal
 
-**This is the future of enterprise AI agents.**
-
----
-
-## 🧬 Why GraphMem Changes Everything
-
-### The Problem with Current AI Memory
-
-Every production AI agent faces the same crisis:
-
-```
-Day 1:     "Who is the CEO?" → "Elon Musk" ✅
-Day 100:   Context window: OVERFLOW 💥
-Day 365:   "Who is the CEO?" → "John... or was it Jane... maybe Elon?" 🤯
-```
-
-**Vector databases don't forget.** They accumulate garbage until your agent drowns in irrelevant, conflicting, outdated information.
-
-### The GraphMem Solution: Memory That Thinks
-
-GraphMem implements the **four pillars of human memory**:
-
-| Human Brain | GraphMem | Why It Matters |
-|-------------|----------|----------------|
-| 🧠 **Forgetting Curve** | Memory Decay | Irrelevant memories fade naturally |
-| 🔗 **Neural Networks** | Knowledge Graph | Relationships between concepts |
-| ⭐ **Importance Weighting** | PageRank Centrality | Hub concepts (Elon Musk) > peripheral ones |
-| ⏰ **Episodic Memory** | Temporal Validity | "CEO in 2015" vs "CEO now" |
-
----
-
-## 🚀 Revolutionary Features
-
-### 1. 🕰️ Point-in-Time Memory (Temporal Validity)
-
-**"Who was CEO in 2015?"** — No other memory system can answer this.
-
-```python
-from datetime import datetime
-from graphmem import GraphMem, MemoryConfig
-
-memory = GraphMem(config)
-
-# GraphMem tracks WHEN facts are true
-memory.ingest("John Smith was CEO of ACME from 2010 to 2018")
-memory.ingest("Jane Doe became CEO of ACME in July 2018")
-
-# Point-in-time queries - like human episodic memory!
-memory.query("Who was CEO in 2015?")      # → "John Smith" ✅
-memory.query("Who is CEO now?")           # → "Jane Doe" ✅
-memory.query("Who was CEO in 2019?")      # → "Jane Doe" ✅
-```
-
-**Use Cases:**
-- 📋 "What contracts were active last quarter?"
-- 👔 "Who was our legal counsel before 2020?"
-- 📈 "What was our strategy during COVID?"
-
-### 2. ⭐ PageRank Centrality (Hub Detection)
-
-GraphMem uses **Google's PageRank algorithm** to identify important entities:
-
-```
-Importance Formula: ρ(e) = w1·f1 + w2·f2 + w3·f3 + w4·f4
-
-where:
-  f1 = Temporal recency    (recent = important)
-  f2 = Access frequency    (used often = important)  
-  f3 = PageRank centrality (well-connected = important) ← NEW!
-  f4 = User feedback       (explicit signals)
-```
-
-**Result:** "Elon Musk" (connected to Tesla, SpaceX, Neuralink) scores **3x higher** than "Austin, Texas" (connected only to Tesla HQ).
-
-```python
-# PageRank automatically identifies hub entities
-Elon Musk:      PR = 1.000 ████████████████████  # Hub - many connections
-Tesla:          PR = 0.774 ███████████████       # Important company
-Austin:         PR = 0.520 ██████████            # Just a location
-```
-
-### 3. 🧠 Self-Evolution (Like Human Memory)
-
-```python
-memory.evolve()  # This single line triggers:
-```
-
-| Mechanism | What Happens | Human Equivalent |
-|-----------|--------------|------------------|
-| **Decay** | Old unused memories fade (importance → 0) | Forgetting curve |
-| **Consolidation** | 5 mentions of "user likes Python" → 1 strong memory | Sleep consolidation |
-| **Rehydration** | Contradictions resolved ("CEO is John" → "CEO is Jane") | Memory updating |
-| **Importance Scoring** | PageRank recalculated | Synaptic strengthening |
-
-**Result:** 80% memory reduction while **keeping what matters**.
-
-### 4. 🏢 Enterprise Multi-Tenant Isolation
-
-**Each user gets their own brain.** Complete data separation.
-
-```python
-# Alice's memory
-alice = GraphMem(config, user_id="alice", memory_id="chat")
-alice.ingest("I work at Google as a senior engineer")
-
-# Bob's memory (COMPLETELY ISOLATED)
-bob = GraphMem(config, user_id="bob", memory_id="chat")
-bob.ingest("I'm a doctor at Mayo Clinic")
-
-# Alice can NEVER see Bob's data
-alice.query("What does Bob do?")  # → "No information found" ✅
-
-# Bob can NEVER see Alice's data  
-bob.query("Where does Alice work?")  # → "No information found" ✅
-```
-
-**Architecture:**
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                        Neo4j Global Instance                              │
-├────────────────────────────────────┬─────────────────────────────────────┤
-│           USER: alice              │            USER: bob                 │
-│  ┌─────────────────────────────┐   │   ┌─────────────────────────────┐   │
-│  │ 🏢 Google  → 👤 Alice       │   │   │ 🏥 Mayo Clinic → 👤 Bob     │   │
-│  │     ↓                       │   │   │       ↓                     │   │
-│  │ 💼 Senior Engineer          │   │   │   🩺 Doctor                 │   │
-│  └─────────────────────────────┘   │   └─────────────────────────────┘   │
-├────────────────────────────────────┴─────────────────────────────────────┤
-│                    Redis Cache (Also Isolated by user_id)                 │
-│  alice:query:*  alice:search:*     │     bob:query:*  bob:search:*       │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 💡 The 3-Line API
-
-```python
-from graphmem import GraphMem, MemoryConfig
-
-# Initialize (works with ANY OpenAI-compatible API)
-config = MemoryConfig(
-    llm_provider="openai_compatible",
-    llm_api_key="your-key",
-    llm_api_base="https://openrouter.ai/api/v1",
-    llm_model="google/gemini-2.0-flash-001",
-    embedding_provider="openai_compatible",
-    embedding_api_key="your-key",
-    embedding_api_base="https://openrouter.ai/api/v1",
-    embedding_model="openai/text-embedding-3-small",
-)
-
-memory = GraphMem(config)
-
-# That's it. 3 methods:
-memory.ingest("Tesla is led by CEO Elon Musk...")  # ← Extract knowledge
-memory.query("Who is the CEO?")                    # ← Ask questions
-memory.evolve()                                    # ← Let memory mature
-```
-
----
-
-## 🏗️ Architecture
-
-### High-Level Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                  🧠 GraphMem                                     │
-│                         The Human Brain for AI Agents                            │
-│                                                                                  │
-│   ┌─────────────┐        ┌─────────────┐        ┌─────────────┐                 │
-│   │  ingest()   │        │   query()   │        │  evolve()   │                 │
-│   │  Learn new  │        │  Recall +   │        │  Mature     │                 │
-│   │  knowledge  │        │  Reasoning  │        │  memories   │                 │
-│   └──────┬──────┘        └──────┬──────┘        └──────┬──────┘                 │
-└──────────┼──────────────────────┼──────────────────────┼────────────────────────┘
-           │                      │                      │
-           ▼                      ▼                      ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           🔐 MULTI-TENANT LAYER                                  │
-│                                                                                  │
-│   Every operation is scoped by: user_id + memory_id                             │
-│                                                                                  │
-│   ┌─────────────────────────────┐    ┌─────────────────────────────┐            │
-│   │       USER: alice           │    │        USER: bob            │            │
-│   │   memory_id: chat_1         │    │    memory_id: chat_1        │            │
-│   │   memory_id: notes          │    │    memory_id: work          │            │
-│   │   ════════════════════      │    │    ════════════════════     │            │
-│   │   Complete isolation ✅     │    │    Complete isolation ✅    │            │
-│   └─────────────────────────────┘    └─────────────────────────────┘            │
-└─────────────────────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                        🕸️ KNOWLEDGE GRAPH ENGINE                                 │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│   ┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐         │
-│   │ ENTITY EXTRACTION │   │   RELATIONSHIP    │   │    COMMUNITY      │         │
-│   │                   │   │    DETECTION      │   │    DETECTION      │         │
-│   │ • LLM-powered     │   │                   │   │                   │         │
-│   │ • Named entities  │   │ • Semantic links  │   │ • Louvain algo    │         │
-│   │ • Type inference  │   │ • Temporal bounds │   │ • Auto-clustering │         │
-│   │ • Descriptions    │   │ • [t_s, t_e]      │   │ • LLM summaries   │         │
-│   └───────────────────┘   └───────────────────┘   └───────────────────┘         │
-│                                                                                  │
-│   ┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐         │
-│   │ ENTITY RESOLUTION │   │    SEMANTIC       │   │   QUERY ENGINE    │         │
-│   │                   │   │     SEARCH        │   │                   │         │
-│   │ • Alias merging   │   │                   │   │ • Multi-hop       │         │
-│   │ • Canonicalization│   │ • Vector index    │   │ • Cross-cluster   │         │
-│   │ • 95% accuracy    │   │ • Cosine sim      │   │ • Context assembly│         │
-│   │ • user_id aware   │   │ • user_id filter  │   │ • LLM synthesis   │         │
-│   └───────────────────┘   └───────────────────┘   └───────────────────┘         │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         🔄 EVOLUTION ENGINE                                      │
-│                      (Human Memory Simulation)                                   │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                      ⭐ PAGERANK CENTRALITY                              │   │
-│   │                                                                          │   │
-│   │   PR(A) = (1-d) + d × Σ(PR(Ti)/C(Ti))    where d = 0.85                 │   │
-│   │                                                                          │   │
-│   │   Hub Detection:                                                         │   │
-│   │   ┌─────────────────────────────────────────────────────────────────┐   │   │
-│   │   │ Elon Musk ─────┬───→ Tesla ───→ Austin                          │   │   │
-│   │   │    (HUB)       ├───→ SpaceX ───→ Hawthorne                      │   │   │
-│   │   │   PR=1.00      └───→ Neuralink                                  │   │   │
-│   │   │                                                                  │   │   │
-│   │   │ PageRank: Elon(1.00) > Tesla(0.77) > SpaceX(0.77) > Austin(0.52)│   │   │
-│   │   └─────────────────────────────────────────────────────────────────┘   │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-│   ┌──────────────────────┐  ┌──────────────────────┐  ┌────────────────────┐    │
-│   │    MEMORY DECAY      │  │   CONSOLIDATION      │  │ TEMPORAL VALIDITY  │    │
-│   │                      │  │                      │  │                    │    │
-│   │ Ebbinghaus Curve:    │  │ LLM-based merging:   │  │ Time bounds:       │    │
-│   │                      │  │                      │  │                    │    │
-│   │ I(t) = I₀·e^(-λt)    │  │ 5 mentions →         │  │ valid_from: t_s    │    │
-│   │                      │  │ 1 strong memory      │  │ valid_until: t_e   │    │
-│   │ λ = decay rate       │  │                      │  │                    │    │
-│   │                      │  │ 80% reduction        │  │ is_valid_at(t)     │    │
-│   │ Unused → archived    │  │ while keeping value  │  │ supersede(end)     │    │
-│   └──────────────────────┘  └──────────────────────┘  └────────────────────┘    │
-│                                                                                  │
-│   Importance Formula: ρ(e) = w1·f1 + w2·f2 + w3·f3 + w4·f4                      │
-│   ├── f1: Recency (0.3)     - Recent access = important                         │
-│   ├── f2: Frequency (0.3)   - Used often = important                            │
-│   ├── f3: PageRank (0.2)    - Well-connected = important (HUB)                  │
-│   └── f4: User signal (0.2) - Explicit importance                               │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                            💾 STORAGE LAYER                                      │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  ┌─────────────────────────────────────────────────────────────────────────────┐│
-│  │                       CHOOSE YOUR STORAGE BACKEND                           ││
-│  │                                                                             ││
-│  │   ┌─────────────┐     ┌─────────────────┐     ┌─────────────────────┐      ││
-│  │   │  InMemory   │     │   🔥 TURSO 🔥    │     │      NEO4J          │      ││
-│  │   │  (Default)  │     │    (Embedded)   │     │    (Enterprise)     │      ││
-│  │   ├─────────────┤     ├─────────────────┤     ├─────────────────────┤      ││
-│  │   │ No persist  │     │ SQLite file     │     │ Full graph DB       │      ││
-│  │   │ Zero config │     │ Works offline   │     │ ACID + clustering   │      ││
-│  │   │ Dev/testing │     │ Cloud sync opt  │     │ Native Cypher       │      ││
-│  │   │ Python vec  │     │ Native vec 🚀   │     │ HNSW vec 🚀         │      ││
-│  │   │             │     │ ~10ms search    │     │ ~5ms search         │      ││
-│  │   └─────────────┘     └─────────────────┘     └─────────────────────┘      ││
-│  │         │                     │                        │                    ││
-│  │         │      ALL BACKENDS GET THE SAME FEATURES:     │                    ││
-│  │         │   ✅ Multi-tenant  ✅ Temporal validity       │                    ││
-│  │         │   ✅ PageRank      ✅ Memory evolution         │                    ││
-│  │         │   ✅ Communities   ✅ Entity resolution        │                    ││
-│  │         └─────────────────────┬─────────────────────────┘                   ││
-│  │                               │                                             ││
-│  └───────────────────────────────┴─────────────────────────────────────────────┘│
-│                                                                                  │
-│   ┌───────────────────────────────────────┐   ┌───────────────────────────────┐ │
-│   │         🗃️ NEO4J GRAPH                 │   │         ⚡ REDIS CACHE        │ │
-│   │         (Enterprise Option)            │   │        (Optional Layer)       │ │
-│   │                                        │   │                               │ │
-│   │  ┌─────────────────────────────────┐  │   │  ┌────────────────────────┐   │ │
-│   │  │      ENTITY NODES               │  │   │  │   EMBEDDING CACHE      │   │ │
-│   │  │  • id, name, type               │  │   │  │                        │   │ │
-│   │  │  • embedding[1536]              │  │   │  │  Key: emb:{text_hash}  │   │ │
-│   │  │  • user_id ← ISOLATION          │  │   │  │  TTL: 24 hours         │   │ │
-│   │  │  • memory_id                    │  │   │  │  3x faster embeddings  │   │ │
-│   │  │  • importance, access_count     │  │   │  └────────────────────────┘   │ │
-│   │  └─────────────────────────────────┘  │   │                               │ │
-│   │                                        │   │  ┌────────────────────────┐   │ │
-│   │  ┌─────────────────────────────────┐  │   │  │   QUERY CACHE          │   │ │
-│   │  │    RELATIONSHIP EDGES           │  │   │  │   (Multi-Tenant!)      │   │ │
-│   │  │  • valid_from  ← TEMPORAL       │  │   │  │                        │   │ │
-│   │  │  • valid_until ← VALIDITY       │  │   │  │  Key: query:{user}:*   │   │ │
-│   │  │  • user_id ← ISOLATION          │  │   │  │  TTL: 5 minutes        │   │ │
-│   │  └─────────────────────────────────┘  │   │  │  Instant repeat: 0ms   │   │ │
-│   │                                        │   │  └────────────────────────┘   │ │
-│   │  ┌─────────────────────────────────┐  │   │                               │ │
-│   │  │  VECTOR INDEX (HNSW)            │  │   │  Auto-Invalidation:           │ │
-│   │  │  Dimension: 1536, cosine        │  │   │  • ingest() → clear cache     │ │
-│   │  │  ~5ms similarity search         │  │   │  • evolve() → clear cache     │ │
-│   │  └─────────────────────────────────┘  │   │  • clear()  → clear cache     │ │
-│   └───────────────────────────────────────┘   └───────────────────────────────┘ │
-│                                                                                  │
-│   ┌───────────────────────────────────────┐   ┌───────────────────────────────┐ │
-│   │   🔥 TURSO (SQLite) - RECOMMENDED!    │   │      🔥 TURSO CACHE           │ │
-│   │      (Edge/Offline Option)            │   │     (Built-in to TursoStore)  │ │
-│   │                                        │   │                               │ │
-│   │  pip install "agentic-graph-mem[libsql]"  │   ┌────────────────────────┐   │ │
-│   │                                        │   │  │ No Redis needed!       │   │ │
-│   │  ✅ Persists to local .db file         │   │  │ SQLite-based cache     │   │ │
-│   │  ✅ Works completely offline           │   │  │ TTL support            │   │ │
-│   │  ✅ Optional Turso Cloud sync          │   │  │ Multi-tenant keys      │   │ │
-│   │  ✅ Native F32_BLOB vector search      │   │  │ Survives restarts      │   │ │
-│   │  ✅ ~10ms vector similarity            │   │  └────────────────────────┘   │ │
-│   │                                        │   │                               │ │
-│   │  SAME FEATURES AS NEO4J:              │   │  Great for:                   │ │
-│   │  • Temporal validity ✅                │   │  • Edge AI devices           │ │
-│   │  • PageRank centrality ✅              │   │  • Offline agents            │ │
-│   │  • Multi-tenant isolation ✅           │   │  • Mobile apps               │ │
-│   │  • Point-in-time queries ✅            │   │  • Cost-sensitive deploys    │ │
-│   └───────────────────────────────────────┘   └───────────────────────────────┘ │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           🤖 LLM PROVIDERS                                       │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│   ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │
-│   │  OpenAI  │ │  Azure   │ │Anthropic │ │  Groq    │ │ Together │ │  Ollama  │ │
-│   │  GPT-4o  │ │  OpenAI  │ │  Claude  │ │  Llama   │ │    AI    │ │  Local   │ │
-│   └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
-│                                                                                  │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                    OpenRouter (100+ Models)                              │   │
-│   │   google/gemini-2.0-flash │ anthropic/claude-3.5 │ meta-llama/llama-3   │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Data Flow: Ingest → Query → Evolve
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              INGEST FLOW                                         │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-  Input Document                    Knowledge Extraction                  Storage
- ┌──────────────┐                  ┌──────────────────┐               ┌───────────┐
- │ "Tesla is    │   ──────────▶   │ LLM extracts:    │  ──────────▶  │ Neo4j OR  │
- │  led by CEO  │                  │                  │               │ 🔥Turso   │
- │  Elon Musk"  │                  │ Entities:        │               │           │
- └──────────────┘                  │ • Tesla [Org]    │               │ (Tesla)───│
-        │                          │ • Elon Musk [Per]│               │     │     │
-        │                          │                  │               │     ▼     │
-        │                          │ Relations:       │               │ CEO_OF    │
-        │                          │ • (Elon)─CEO─▶   │               │     │     │
-        │                          │   (Tesla)        │               │     ▼     │
-        │                          │                  │               │ (Elon)    │
-        │                          │ Temporal:        │               └───────────┘
-        │                          │ • valid_from=now │                     │
-        │                          │ • valid_until=∞  │                     ▼
-        │                          └──────────────────┘               ┌───────────┐
-        │                                   │                         │ Redis OR  │
-        │                                   │                         │ TursoCache│
-        │                                   ▼                         └───────────┘
-        │                          ┌──────────────────┐
-        │                          │ Entity Resolution│
-        │                          │                  │
-        │                          │ "Elon" = "Musk"  │
-        │                          │ = "Elon Musk"    │
-        │                          │ → Canonical: "Elon Musk"
-        │                          └──────────────────┘
-        │
-        └─── user_id + memory_id tagged on ALL nodes/edges
-
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                               QUERY FLOW                                         │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-  User Question              Cache Check           Retrieval              Answer
- ┌──────────────┐          ┌───────────┐        ┌───────────┐         ┌──────────┐
- │ "Who is the  │   ───▶   │  Redis    │  HIT   │           │   ───▶  │ "Elon    │
- │  CEO?"       │          │  Cache    │  ───▶  │  SKIP!    │         │  Musk"   │
- │              │          │           │        │           │         │          │
- │ user: alice  │          │ Key:      │        └───────────┘         └──────────┘
- │ mem: chat_1  │          │ query:    │
- └──────────────┘          │ alice:    │  MISS
-        │                  │ chat_1:   │  ───▶  ┌───────────────────────────────┐
-        │                  │ {hash}    │        │         RETRIEVAL              │
-        │                  └───────────┘        │                                │
-        │                                       │  1. Embed query                │
-        │                                       │  2. Vector search (Neo4j/Turso)│
-        │                                       │     WHERE user_id = 'alice'    │
-        │                                       │     AND memory_id = 'chat_1'   │
-        │                                       │  3. Get related edges          │
-        │                                       │  4. Filter by temporal         │
-        │                                       │     is_valid_at(now) ✅        │
-        │                                       │  5. Rank by importance         │
-        │                                       │     (PageRank score)           │
-        │                                       │  6. Build context              │
-        │                                       │  7. LLM generates answer       │
-        │                                       │  8. Cache result in Redis      │
-        │                                       └───────────────────────────────┘
-        │
-        └─── user_id ensures Alice NEVER sees Bob's data
-
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              EVOLVE FLOW                                         │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-  Trigger                    Evolution Cycle                         Result
- ┌──────────────┐          ┌────────────────────────────────┐     ┌────────────┐
- │ memory       │   ───▶   │                                │     │            │
- │ .evolve()    │          │  1. PAGERANK RECALCULATION     │     │ • Hubs     │
- │              │          │     Build graph from edges     │     │   identified│
- │ user: alice  │          │     Compute PR scores          │     │            │
- │              │          │     Update importance          │     │ • 80%      │
- └──────────────┘          │                                │     │   memory   │
-        │                  │  2. MEMORY DECAY               │     │   reduced  │
-        │                  │     I(t) = I₀ × e^(-λt)        │     │            │
-        │                  │     Archive if I < 0.1         │     │ • Conflicts│
-        │                  │                                │     │   resolved │
-        │                  │  3. CONSOLIDATION              │     │            │
-        │                  │     Find similar memories      │     │ • Cache    │
-        │                  │     LLM merges duplicates      │     │   cleared  │
-        │                  │                                │     │            │
-        │                  │  4. REHYDRATION                │     └────────────┘
-        │                  │     Update contradictions      │
-        │                  │     "CEO=John" → "CEO=Jane"    │
-        │                  │                                │
-        │                  │  5. CACHE INVALIDATION         │
-        │                  │     Clear Redis for user       │
-        │                  └────────────────────────────────┘
-        │
-        └─── Only evolves Alice's data (user_id scoped)
-```
-
-### Multi-Tenant Data Isolation
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                     🔐 MULTI-TENANT ARCHITECTURE                                 │
-│              (Works identically with Neo4j, Turso, or InMemory)                  │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│                    STORAGE BACKEND (Neo4j / Turso / InMemory)                    │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                       GLOBAL VECTOR INDEX                                │   │
-│   │                    (Entity.embedding, HNSW)                              │   │
-│   │                                                                          │   │
-│   │   Query: db.index.vector.queryNodes(                                     │   │
-│   │            'entity_embedding_index',                                     │   │
-│   │            $top_k * 10,     ← Fetch extra for filtering                  │   │
-│   │            $query_embedding                                              │   │
-│   │          )                                                               │   │
-│   │          WHERE node.user_id = $user_id   ← ISOLATION                     │   │
-│   │          AND node.memory_id = $memory_id                                 │   │
-│   │          RETURN node LIMIT $top_k                                        │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-│   ┌───────────────────────────────┐   ┌───────────────────────────────────┐     │
-│   │         USER: alice           │   │          USER: bob                │     │
-│   │                               │   │                                   │     │
-│   │  ┌─────────────────────────┐  │   │  ┌─────────────────────────────┐  │     │
-│   │  │    memory: chat_1       │  │   │  │    memory: chat_1           │  │     │
-│   │  │  ┌─────┐    ┌─────┐     │  │   │  │  ┌─────┐    ┌─────┐        │  │     │
-│   │  │  │Alice│───▶│Google│    │  │   │  │  │ Bob │───▶│Mayo  │       │  │     │
-│   │  │  └─────┘    └─────┘     │  │   │  │  └─────┘    │Clinic│       │  │     │
-│   │  │     │                   │  │   │  │     │       └─────┘        │  │     │
-│   │  │     ▼                   │  │   │  │     ▼                      │  │     │
-│   │  │  ┌────────┐             │  │   │  │  ┌──────┐                  │  │     │
-│   │  │  │Engineer│             │  │   │  │  │Doctor│                  │  │     │
-│   │  │  └────────┘             │  │   │  │  └──────┘                  │  │     │
-│   │  └─────────────────────────┘  │   │  └─────────────────────────────┘  │     │
-│   │                               │   │                                   │     │
-│   │  ┌─────────────────────────┐  │   │  ┌─────────────────────────────┐  │     │
-│   │  │    memory: notes        │  │   │  │    memory: work             │  │     │
-│   │  │  ┌──────┐   ┌─────┐     │  │   │  │  ┌───────┐   ┌──────┐      │  │     │
-│   │  │  │Python│──▶│ ML  │     │  │   │  │  │Patient│──▶│Record│      │  │     │
-│   │  │  └──────┘   └─────┘     │  │   │  │  └───────┘   └──────┘      │  │     │
-│   │  └─────────────────────────┘  │   │  └─────────────────────────────┘  │     │
-│   │                               │   │                                   │     │
-│   └───────────────────────────────┘   └───────────────────────────────────┘     │
-│                                                                                  │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                           REDIS CACHE (ISOLATED)                                 │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                                                                          │   │
-│   │   Alice's Keys:                      Bob's Keys:                         │   │
-│   │   ─────────────                      ──────────                          │   │
-│   │   query:alice:chat_1:abc123          query:bob:chat_1:xyz789             │   │
-│   │   search:alice:chat_1:def456         search:bob:chat_1:uvw321            │   │
-│   │   search:alice:notes:ghi789          search:bob:work:rst654              │   │
-│   │                                                                          │   │
-│   │   Shared (same text = same embedding):                                   │   │
-│   │   ─────────────────────────────────────                                  │   │
-│   │   emb:sha256_of_text → [0.1, 0.2, ...]                                   │   │
-│   │                                                                          │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-│   ✅ Alice can NEVER access Bob's cached queries                                │
-│   ✅ Bob can NEVER access Alice's cached queries                                │
-│   ✅ Embeddings shared (efficiency) - no sensitive data in embeddings           │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Temporal Validity Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                       ⏰ TEMPORAL VALIDITY                                       │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│   Every RELATIONSHIP has a time interval: [valid_from, valid_until]             │
-│                                                                                  │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                         CEO TRANSITIONS                                  │   │
-│   │                                                                          │   │
-│   │   Timeline:  2010      2015      2018      2020      2025               │   │
-│   │              │         │         │         │         │                   │   │
-│   │              ▼         ▼         ▼         ▼         ▼                   │   │
-│   │                                                                          │   │
-│   │   John ──CEO_OF──▶ ACME   ════════════════╗                             │   │
-│   │   valid: [2010-01-01, 2018-06-30]         ║                             │   │
-│   │                                            ║                             │   │
-│   │   Jane ──CEO_OF──▶ ACME                   ╚════════════════════════     │   │
-│   │   valid: [2018-07-01, NULL]                ← NULL = still current       │   │
-│   │                                                                          │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-│   Point-in-Time Queries:                                                         │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                                                                          │   │
-│   │   Q: "Who was CEO in 2015?"                                              │   │
-│   │                                                                          │   │
-│   │   1. Find edges WHERE relation_type = 'CEO_OF'                           │   │
-│   │   2. Filter: is_valid_at(datetime(2015, 6, 1))                           │   │
-│   │      ├── John: valid_from=2010 ≤ 2015 ≤ valid_until=2018 ✅             │   │
-│   │      └── Jane: valid_from=2018 > 2015 ❌                                 │   │
-│   │   3. Return: "John Smith"                                                │   │
-│   │                                                                          │   │
-│   │   Q: "Who is CEO now?"                                                   │   │
-│   │                                                                          │   │
-│   │   1. Filter: is_valid_at(datetime.utcnow())                              │   │
-│   │      ├── John: valid_until=2018 < now ❌                                 │   │
-│   │      └── Jane: valid_from=2018 ≤ now, valid_until=NULL ✅                │   │
-│   │   2. Return: "Jane Doe"                                                  │   │
-│   │                                                                          │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-│   API:                                                                           │
-│   ┌─────────────────────────────────────────────────────────────────────────┐   │
-│   │                                                                          │   │
-│   │   # Check validity at any point in time                                  │   │
-│   │   edge.is_valid_at(datetime(2015, 6, 1))  # True/False                   │   │
-│   │                                                                          │   │
-│   │   # Mark relationship as ended                                           │   │
-│   │   edge.supersede(end_time=datetime(2018, 6, 30))                         │   │
-│   │                                                                          │   │
-│   │   # Query edges at specific time                                         │   │
-│   │   store.query_edges_at_time(                                             │   │
-│   │       memory_id="company_kb",                                            │   │
-│   │       query_time=datetime(2015, 6, 1),                                   │   │
-│   │       relation_type="CEO_OF"                                             │   │
-│   │   )                                                                      │   │
-│   │                                                                          │   │
-│   └─────────────────────────────────────────────────────────────────────────┘   │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### File Structure
-
-```
-graphmem/
-├── core/
-│   ├── memory.py              # GraphMem main class
-│   ├── memory_types.py        # MemoryNode, MemoryEdge (+ temporal validity)
-│   └── exceptions.py          # Custom exceptions
-│
-├── graph/
-│   ├── knowledge_graph.py     # LLM-based extraction
-│   ├── entity_resolver.py     # Deduplication (user_id aware)
-│   └── community_detector.py  # Topic clustering
-│
-├── evolution/
-│   ├── memory_evolution.py    # Evolution orchestrator
-│   ├── importance_scorer.py   # PageRank + multi-factor scoring
-│   ├── decay.py               # Ebbinghaus forgetting curve
-│   ├── consolidation.py       # LLM-based merging (user_id aware)
-│   └── rehydration.py         # Contradiction resolution
-│
-├── retrieval/
-│   ├── query_engine.py        # Multi-hop + cross-cluster
-│   ├── retriever.py           # Context retrieval
-│   └── semantic_search.py     # Vector search (user_id filtered)
-│
-├── stores/
-│   ├── neo4j_store.py         # Graph + temporal + HNSW vector index
-│   ├── turso_store.py         # SQLite + temporal + native vector (NEW!)
-│   ├── memory_store.py        # In-memory (default)
-│   └── redis_cache.py         # Multi-tenant cache
-│
-├── llm/
-│   ├── providers.py           # 10+ LLM providers
-│   └── embeddings.py          # Embedding + cache
-│
-└── context/
-    ├── context_engine.py      # Context assembly
-    ├── chunker.py             # Semantic chunking
-    └── multimodal.py          # JSON, CSV, Markdown, Code, Web
-```
-
----
-
-## 📊 Why Enterprise Teams Choose GraphMem
-
-### Production Scale Performance
-
-| Metric | Naive RAG | GraphMem | Advantage |
-|--------|-----------|----------|-----------|
-| **1K conversations** | 💥 Context overflow | ✅ Bounded | Handles growth |
-| **10K entities** | O(n) = 2.3s | O(1) = 50ms | **46x faster** |
-| **1 year history** | 3,650 entries | ~100 consolidated | **97% reduction** |
-| **Entity conflicts** | Duplicates | Auto-resolved | Clean data |
-| **Temporal queries** | ❌ Impossible | ✅ Native | Unique capability |
-
-### Cost Efficiency
-
-```
-Naive RAG:  Send entire history every query    = $$$$$
-GraphMem:   Retrieve only relevant subgraph    = $
-                                                 ─────
-                                                 99% savings
-```
-
-### Enterprise Requirements
-
-| Requirement | GraphMem |
-|-------------|----------|
-| Multi-tenant isolation | ✅ `user_id` on every node |
-| ACID transactions | ✅ Neo4j backend |
-| Horizontal scaling | ✅ Neo4j cluster + Redis |
-| Audit trail | ✅ Temporal validity history |
-| Data sovereignty | ✅ Self-hosted option |
-
----
-
-## 🔧 Installation
+## Installation
 
 ```bash
-# Core only (in-memory, for development)
-pip install agentic-graph-mem
-
-# 🔥 RECOMMENDED: Turso (SQLite persistence + offline)
-pip install "agentic-graph-mem[libsql]"
-
-# Enterprise: Neo4j + Redis (full graph power)
-pip install "agentic-graph-mem[all]"
+go get github.com/graphmem/graphmem-go
 ```
 
-### 🎯 Which Backend Should You Choose?
+## Quick Start
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         STORAGE BACKEND DECISION TREE                            │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│   "Do you need data to persist between restarts?"                               │
-│                           │                                                      │
-│              ┌────────────┴────────────┐                                        │
-│              │                         │                                        │
-│              NO                       YES                                       │
-│              │                         │                                        │
-│              ▼                         ▼                                        │
-│    ┌─────────────────┐    "Do you need complex graph queries                    │
-│    │   InMemory      │     (multi-hop traversals, GDS algorithms)?"             │
-│    │                 │                 │                                        │
-│    │ • Development   │    ┌────────────┴────────────┐                          │
-│    │ • Testing       │    │                         │                          │
-│    │ • Quick POCs    │   NO                        YES                         │
-│    │ • Zero config   │    │                         │                          │
-│    └─────────────────┘    ▼                         ▼                          │
-│                    ┌─────────────────┐    ┌─────────────────┐                  │
-│                    │   🔥 TURSO       │    │   NEO4J         │                  │
-│                    │                 │    │                 │                  │
-│                    │ • Edge/offline  │    │ • Enterprise    │                  │
-│                    │ • Mobile apps   │    │ • Complex graphs│                  │
-│                    │ • Single-user   │    │ • Multi-tenant  │                  │
-│                    │ • No server     │    │ • Horizontal    │                  │
-│                    │ • Simple setup  │    │   scaling       │                  │
-│                    │ • SQLite-based  │    │ • ACID + cluster│                  │
-│                    └─────────────────┘    └─────────────────┘                  │
-│                                                    │                            │
-│                                      "Add high-performance caching?"            │
-│                                                    │                            │
-│                                           ┌───────┴───────┐                    │
-│                                          YES              NO                    │
-│                                           │               │                    │
-│                                           ▼               ▼                    │
-│                                    ┌───────────┐    ┌───────────┐              │
-│                                    │  + REDIS  │    │ Neo4j only│              │
-│                                    │  Cache    │    │ (still    │              │
-│                                    │           │    │  great!)  │              │
-│                                    └───────────┘    └───────────┘              │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/graphmem/graphmem-go/pkg/graphmem"
+)
+
+func main() {
+    // Create configuration
+    config := graphmem.NewConfig()
+    // config.LLMAPIKey = "your-api-key" // Or set OPENAI_API_KEY env var
+
+    // Create GraphMem instance
+    gm, err := graphmem.New(config,
+        graphmem.WithUserID("user123"),
+        graphmem.WithAutoEvolve(true),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer gm.Close()
+
+    // Ingest content
+    result, err := gm.Ingest("Apple Inc. was founded by Steve Jobs in 1976. Tim Cook is the current CEO.")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Extracted %d entities, %d relationships\n", result.Entities, result.Relationships)
+
+    // Query memory
+    response, err := gm.Query("Who founded Apple?")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("Answer:", response.Answer)
+}
 ```
 
-### Feature Comparison
+## Architecture
 
-| Feature | InMemory | Turso 🔥 | Neo4j |
-|---------|----------|----------|-------|
-| **Persistence** | ❌ | ✅ SQLite file | ✅ Server |
-| **Works Offline** | ✅ | ✅ | ❌ |
-| **Vector Search** | Python | Native `F32_BLOB` | Native HNSW |
-| **Cloud Sync** | ❌ | ✅ Optional | ✅ |
-| **Setup Complexity** | None | One file path | Server required |
-| **Multi-hop Queries** | ✅ NetworkX | ✅ NetworkX | ✅ Native Cypher |
-| **PageRank** | ✅ | ✅ | ✅ |
-| **Temporal Validity** | ✅ | ✅ | ✅ |
-| **Multi-tenant** | ✅ | ✅ | ✅ |
-| **Best For** | Dev/Test | Edge/Offline | Enterprise |
-
----
-
-## 📖 Complete Examples
-
-### Basic Usage (In-Memory)
-
-```python
-from graphmem import GraphMem, MemoryConfig
-
-config = MemoryConfig(
-    llm_provider="openai_compatible",
-    llm_api_key="sk-or-v1-your-key",
-    llm_api_base="https://openrouter.ai/api/v1",
-    llm_model="google/gemini-2.0-flash-001",
-    embedding_provider="openai_compatible",
-    embedding_api_key="sk-or-v1-your-key",
-    embedding_api_base="https://openrouter.ai/api/v1",
-    embedding_model="openai/text-embedding-3-small",
-)
-
-memory = GraphMem(config)
-
-# Learn
-memory.ingest("Tesla is led by CEO Elon Musk. Founded in 2003.")
-memory.ingest("SpaceX, founded by Elon Musk in 2002, builds rockets.")
-memory.ingest("Neuralink develops brain-computer interfaces.")
-
-# Recall
-response = memory.query("What companies does Elon Musk lead?")
-print(response.answer)  # "Elon Musk leads Tesla, SpaceX, and Neuralink."
-
-# Mature
-memory.evolve()  # Consolidates, decays, re-ranks importance
+```
+pkg/graphmem/
+├── types.go           # Core data structures (MemoryNode, MemoryEdge, Memory, etc.)
+├── errors.go          # Custom error types
+├── config.go          # Configuration with environment variable support
+├── llm.go             # LLM provider abstraction (OpenAI, Azure OpenAI)
+├── embedding.go       # Embedding provider abstraction
+├── store.go           # Storage backends (in-memory, extensible)
+├── knowledge_graph.go # Knowledge graph extraction
+├── entity_resolver.go # Entity deduplication and merging
+├── retriever.go       # Memory retrieval and query
+├── evolution.go       # Memory evolution (consolidation, decay)
+└── graphmem.go        # Main GraphMem interface
 ```
 
-### With Turso (SQLite Persistence + Offline Support) 🆕
+## Core Concepts
 
-```python
-from graphmem import GraphMem, MemoryConfig
+### Memory Node
+Represents an entity in the knowledge graph with:
+- Name and entity type
+- Aliases for deduplication
+- Embedding vector for semantic similarity
+- Importance level (Ephemeral to Critical)
+- State (Active, Decaying, Archived, Deleted)
+- Multi-tenant isolation (UserID, MemoryID)
 
-# Turso gives you persistence without running Neo4j!
-# Data survives restarts, works offline, can sync to cloud
+### Memory Edge
+Represents a relationship between entities with:
+- Source and target node IDs
+- Relation type and description
+- Weight and confidence scores
+- Temporal validity (valid_from, valid_until)
 
-config = MemoryConfig(
-    llm_provider="openai_compatible",
-    llm_api_key="sk-or-v1-your-key",
-    llm_api_base="https://openrouter.ai/api/v1",
-    llm_model="google/gemini-2.0-flash-001",
-    embedding_provider="openai_compatible",
-    embedding_api_key="sk-or-v1-your-key",
-    embedding_api_base="https://openrouter.ai/api/v1",
-    embedding_model="openai/text-embedding-3-small",
-    
-    # 🔥 Just add a file path - that's it!
-    turso_db_path="my_agent_memory.db",
-    
-    # Optional: Sync to Turso Cloud for backups/multi-device
-    # turso_url="https://your-db.turso.io",
-    # turso_auth_token="your-token",
-)
+### Memory Evolution
+Implements human-like memory behavior:
+- **Consolidation**: Merges similar entities above similarity threshold
+- **Decay**: Reduces importance over time based on forgetting curve
+- **Reinforcement**: Updates importance based on PageRank and access patterns
 
-memory = GraphMem(config, user_id="alice")
+## Configuration
 
-# All data persists in my_agent_memory.db
-memory.ingest("Alice is a software engineer at Google.")
-memory.save()  # Data survives restart!
-
-# Later, in a new session:
-memory2 = GraphMem(config, user_id="alice")
-response = memory2.query("Where does Alice work?")  # Still knows! ✅
-```
-
-**Why Turso over InMemory?**
-- ✅ Data survives restarts (SQLite file)
-- ✅ Works offline (no network needed)
-- ✅ Optional cloud sync (Turso Cloud)
-- ✅ No server to manage (unlike Neo4j)
-- ✅ Per-user database files (true isolation)
-
-### Production: Multi-Tenant Chat System
-
-```python
-from graphmem import GraphMem, MemoryConfig
-
-# Base config (shared across all users)
-base_config = MemoryConfig(
-    llm_provider="openai_compatible",
-    llm_api_key="sk-or-v1-your-key",
-    llm_api_base="https://openrouter.ai/api/v1",
-    llm_model="google/gemini-2.0-flash-001",
-    embedding_provider="openai_compatible",
-    embedding_api_key="sk-or-v1-your-key",
-    embedding_api_base="https://openrouter.ai/api/v1",
-    embedding_model="openai/text-embedding-3-small",
-    # Production storage
-    neo4j_uri="neo4j+ssc://xxx.databases.neo4j.io",
-    neo4j_username="neo4j",
-    neo4j_password="your-password",
-    redis_url="redis://default:password@your-redis.cloud.redislabs.com:17983",
-)
-
-class ChatService:
-    def get_memory(self, user_id: str, session_id: str) -> GraphMem:
-        """Each user gets isolated memory."""
-        return GraphMem(
-            base_config,
-            user_id=user_id,      # ← Complete isolation
-            memory_id=session_id,  # ← Per-session memory
-        )
-    
-    def chat(self, user_id: str, session_id: str, message: str) -> str:
-        memory = self.get_memory(user_id, session_id)
-        
-        # Store user message as memory
-        memory.ingest(message)
-        
-        # Generate response using memory
-        response = memory.query(message)
-        
-        return response.answer
-
-# Usage
-service = ChatService()
-
-# Alice's session (isolated)
-alice_response = service.chat("alice", "session_1", "I'm a software engineer at Google")
-alice_response = service.chat("alice", "session_1", "What do I do?")  # → "Software engineer at Google"
-
-# Bob's session (completely separate)
-bob_response = service.chat("bob", "session_1", "I'm a doctor")
-bob_response = service.chat("bob", "session_1", "What does Alice do?")  # → "No information found"
-```
-
-### Temporal Queries: Track Changes Over Time
-
-```python
-from datetime import datetime
-from graphmem.core.memory_types import MemoryEdge
-from graphmem.stores.neo4j_store import Neo4jStore
-
-store = Neo4jStore(uri, user, password)
-
-# Track CEO transitions
-john_ceo = MemoryEdge(
-    id="john_ceo",
-    source_id="john_smith",
-    target_id="acme_corp",
-    relation_type="CEO_OF",
-    valid_from=datetime(2010, 1, 1),
-    valid_until=datetime(2018, 6, 30),  # John left
-)
-
-jane_ceo = MemoryEdge(
-    id="jane_ceo",
-    source_id="jane_doe",
-    target_id="acme_corp",
-    relation_type="CEO_OF",
-    valid_from=datetime(2018, 7, 1),
-    valid_until=None,  # Current CEO
-)
-
-# Query by time period
-ceo_2015 = store.query_edges_at_time(
-    memory_id="company_kb",
-    query_time=datetime(2015, 6, 1),
-    relation_type="CEO_OF"
-)
-# → Returns John Smith's edge
-
-ceo_now = store.query_edges_at_time(
-    memory_id="company_kb",
-    query_time=datetime.utcnow(),
-    relation_type="CEO_OF"
-)
-# → Returns Jane Doe's edge
-
-# Mark relationship as ended
-store.supersede_relationship(
-    memory_id="company_kb",
-    edge_id="jane_ceo",
-    end_time=datetime(2025, 12, 31)  # Jane leaves
-)
-```
-
----
-
-## 🧪 Run the Evaluation
+Environment variables:
 
 ```bash
-cd graphmem/evaluation
-python run_eval.py
+# LLM Configuration
+OPENAI_API_KEY=your-api-key
+GRAPHMEM_LLM_PROVIDER=openai          # openai, azure_openai
+GRAPHMEM_LLM_MODEL=gpt-4o-mini
+
+# Embedding Configuration
+GRAPHMEM_EMBEDDING_PROVIDER=openai
+GRAPHMEM_EMBEDDING_MODEL=text-embedding-3-small
+
+# Evolution Configuration
+GRAPHMEM_EVOLUTION_ENABLED=true
+GRAPHMEM_DECAY_ENABLED=true
+GRAPHMEM_DECAY_HALF_LIFE_DAYS=30
+GRAPHMEM_CONSOLIDATION_THRESHOLD=0.85
+
+# Azure OpenAI (if using)
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_DEPLOYMENT=your-deployment
+AZURE_EMBEDDING_DEPLOYMENT=your-embedding-deployment
 ```
 
-Uses [MultiHopRAG dataset](https://huggingface.co/datasets/yixuantt/MultiHopRAG) (2,556 QA samples, 609 documents).
+## Testing
 
----
-
-## 🔬 The Science Behind GraphMem
-
-### Ebbinghaus Forgetting Curve
-```
-importance(t) = importance_0 × e^(-λ × (t - last_access))
-```
-Just like human memory, unused information fades exponentially.
-
-### PageRank for Entity Importance
-```
-PR(A) = (1-d) + d × Σ(PR(Ti)/C(Ti))
-```
-Hub entities (connected to many concepts) are more important—exactly like neural hubs in the brain.
-
-### Temporal Validity
-```
-valid(r, t) = 1[t_s(r) ≤ t ≤ t_e(r)]
-```
-Every relationship has a time interval, enabling episodic memory recall.
-
----
-
-## 🏭 Deployment Tiers
-
-| Scale | Users | Strategy | Infrastructure |
-|-------|-------|----------|----------------|
-| **Development** | 1 | InMemory (no persistence) | Nothing required |
-| **Personal/Edge** | 1-10 | 🔥 Turso (local SQLite) | Single `.db` file per user |
-| **Startup** | 1-100 | Turso + Cloud sync | Turso Cloud (free tier) |
-| **Growth** | 100-10K | Neo4j + Redis | Neo4j Aura Pro + Redis Cloud |
-| **Enterprise** | 10K-100K | Sharded by region | Neo4j Enterprise Cluster |
-| **Global** | 100K+ | Database per tenant | Multi-region Neo4j Fabric |
-
-### When to Use Each Storage
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           STORAGE SELECTION GUIDE                                │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  🧪 DEVELOPMENT / TESTING                                                       │
-│     └─▶ InMemory (default)                                                      │
-│         • pip install agentic-graph-mem                                         │
-│         • config = MemoryConfig(...)  # No storage params needed                │
-│                                                                                  │
-│  📱 EDGE / OFFLINE / SIMPLE APPS                                                │
-│     └─▶ 🔥 Turso (RECOMMENDED)                                                  │
-│         • pip install "agentic-graph-mem[libsql]"                               │
-│         • config = MemoryConfig(..., turso_db_path="agent.db")                  │
-│         • Works offline, data persists, no server!                              │
-│                                                                                  │
-│  🏢 ENTERPRISE / HIGH-SCALE                                                     │
-│     └─▶ Neo4j + Redis                                                           │
-│         • pip install "agentic-graph-mem[all]"                                  │
-│         • config = MemoryConfig(..., neo4j_uri=..., redis_url=...)              │
-│         • Complex graph queries, horizontal scaling, ACID                       │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📦 Dependencies
+### Unit Tests (No External Services)
 
 ```bash
-# Core (no external services, in-memory only)
-pip install agentic-graph-mem
+# Run unit tests
+go test ./...
 
-# With Turso (SQLite persistence, offline-first) - SIMPLEST OPTION!
-pip install agentic-graph-mem libsql
+# Run with verbose output
+go test ./pkg/graphmem/... -v
 
-# With Neo4j persistence (full graph database)
-pip install "agentic-graph-mem[neo4j]"
-
-# With Redis caching (high-performance cache)
-pip install "agentic-graph-mem[redis]"
-
-# Full production stack (Neo4j + Redis)
-pip install "agentic-graph-mem[all]"
+# Run with coverage
+go test ./... -cover
 ```
 
-### Storage Backend Comparison
+### Integration Tests (Require API Keys)
 
-| Backend | Persistence | Vector Search | Graph Algorithms | Offline | Use Case |
-|---------|-------------|---------------|------------------|---------|----------|
-| **InMemory** | ❌ | ✅ (in Python) | ✅ (NetworkX) | ✅ | Development, testing |
-| **Turso** | ✅ | ✅ (native) | ✅ (NetworkX) | ✅ | Edge/offline AI, simple deploys |
-| **Neo4j** | ✅ | ✅ (HNSW) | ✅ (GDS, native) | ❌ | Enterprise, complex graphs |
-| **Redis** | ⚠️ (volatile) | ❌ | ❌ | ❌ | Caching layer only |
+1. Copy the environment file:
+```bash
+cp env.example .env
+```
 
----
+2. Fill in your API keys in `.env`:
+```bash
+# Required for LLM tests
+OPENAI_API_KEY=sk-your-key-here
 
-## 🎯 The Future of AI Memory
+# Or use other providers
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+GROQ_API_KEY=gsk_your-key-here
 
-GraphMem isn't just another vector database wrapper. It's a **paradigm shift**:
+# For storage backend tests
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-password
 
-| Old Way | GraphMem Way |
-|---------|--------------|
-| Store everything | Remember what matters |
-| Static forever | Evolves over time |
-| No relationships | Rich knowledge graph |
-| "Who is CEO?" | "Who was CEO in 2015?" |
-| One user fits all | Enterprise multi-tenant |
-| Hope for the best | PageRank prioritization |
+REDIS_URL=redis://localhost:6379
+```
 
-**The agents of tomorrow will have memories that think.**
+3. Set test flags:
+```bash
+export RUN_LLM_TESTS=true        # Enable LLM tests
+export RUN_NEO4J_TESTS=true      # Enable Neo4j tests
+export RUN_REDIS_TESTS=true      # Enable Redis tests
+export RUN_TURSO_TESTS=true      # Enable Turso tests
+```
 
----
+4. Run integration tests:
+```bash
+# Load environment
+source .env
 
-## 🤝 Contributing
+# Run integration tests
+go test -tags=integration ./pkg/graphmem/... -v
 
-We're building the future of AI memory. Join us!
+# Run specific test
+go test -tags=integration ./pkg/graphmem/... -v -run TestOpenAILLMIntegration
 
-- 🐛 [Report bugs](https://github.com/Al-aminI/GraphMem/issues)
-- 💡 [Request features](https://github.com/Al-aminI/GraphMem/issues)
-- 🔀 [Submit PRs](https://github.com/Al-aminI/GraphMem/pulls)
+# Run all LLM provider tests
+go test -tags=integration ./pkg/graphmem/... -v -run "Test.*LLM.*Integration"
 
----
+# Run knowledge graph extraction test
+go test -tags=integration ./pkg/graphmem/... -v -run TestKnowledgeGraphExtractionIntegration
 
-## 📄 License
+# Run end-to-end test
+go test -tags=integration ./pkg/graphmem/... -v -run TestEndToEndIntegration
+```
 
-MIT License - see [LICENSE](LICENSE).
+### Available Integration Tests
 
----
+| Test | Required Env Vars |
+|------|-------------------|
+| `TestOpenAILLMIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestAnthropicLLMIntegration` | `ANTHROPIC_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestOllamaLLMIntegration` | `RUN_LLM_TESTS=true` (Ollama running locally) |
+| `TestGroqLLMIntegration` | `GROQ_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestOpenAIEmbeddingIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestKnowledgeGraphExtractionIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestEntityResolutionIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestSemanticSearchIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestCommunityDetectionIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestConsolidationIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestHighPerformancePipelineIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestQueryEngineIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestEndToEndIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestRehydrationIntegration` | `OPENAI_API_KEY`, `RUN_LLM_TESTS=true` |
+| `TestNeo4jStoreIntegration` | `NEO4J_*`, `RUN_NEO4J_TESTS=true` |
+| `TestRedisCacheIntegration` | `REDIS_URL`, `RUN_REDIS_TESTS=true` |
+| `TestTursoStoreIntegration` | `TURSO_*`, `RUN_TURSO_TESTS=true` |
 
-## 🙏 Acknowledgments
+### Test Categories
 
-- Inspired by cognitive neuroscience research on human memory
-- Built on Neo4j, Redis, Turso (libSQL), and OpenAI
-- PageRank algorithm by Larry Page and Sergey Brin
-- Turso team for the amazing embedded SQLite with vector search
+- **Unit Tests**: No build tags, no external dependencies
+- **Chunker Tests**: `TestDocument*ChunkerIntegration` - No API keys needed
+- **LLM Tests**: Require `RUN_LLM_TESTS=true` and appropriate API keys
+- **Storage Tests**: Require specific backend flags and connections
 
----
+## Docker Setup
 
-<div align="center">
+The project includes a complete Docker setup with all dependencies (Neo4j, Redis, LibSQL/Turso).
 
-**Made with 🧠 by Al-Amin Ibrahim**
+### Quick Start with Docker
 
-[![GitHub](https://img.shields.io/badge/GitHub-Al--aminI/GraphMem-blue?style=for-the-badge&logo=github)](https://github.com/Al-aminI/GraphMem)
-[![PyPI](https://img.shields.io/badge/PyPI-agentic--graph--mem-green?style=for-the-badge&logo=pypi)](https://pypi.org/project/agentic-graph-mem/)
+```bash
+# Copy environment file
+cp docker.env.example .env
 
-*"Give your AI agents the memory they deserve."*
+# Edit .env with your API keys
+nano .env
 
-</div>
+# Start all services
+make docker-up
+
+# Or use docker-compose directly
+docker-compose --profile full up -d
+```
+
+### Running Integration Tests in Docker
+
+```bash
+# Run all integration tests
+make docker-test
+
+# Or manually
+docker-compose --profile test up --build --abort-on-container-exit
+```
+
+### Development Mode (Services Only)
+
+Start only the infrastructure services and run tests locally:
+
+```bash
+# Start Neo4j, Redis, LibSQL
+make services-up
+
+# Check service status
+make services-status
+
+# Run integration tests locally
+make test-integration
+
+# Stop services
+make services-down
+```
+
+### Using Hosted Services
+
+To use hosted services instead of local containers, edit your `.env` file:
+
+```bash
+# Set mode to hosted
+USE_LOCAL_SERVICES=false
+
+# Configure hosted Neo4j (e.g., Neo4j Aura)
+NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-aura-password
+
+# Configure hosted Redis (e.g., Redis Cloud)
+REDIS_URL=redis://user:password@your-host.redis-cloud.com:16379
+
+# Configure Turso Cloud
+TURSO_DATABASE_URL=libsql://your-db-name.turso.io
+TURSO_AUTH_TOKEN=your-turso-auth-token
+```
+
+Then start the application without local services:
+
+```bash
+docker-compose --profile app up -d
+```
+
+### Local LLM with Ollama
+
+```bash
+# Start Ollama container
+make ollama-up
+
+# Pull a model
+make ollama-pull MODEL=llama3.2
+
+# List available models
+make ollama-models
+```
+
+### Docker Profiles
+
+| Profile | Services | Use Case |
+|---------|----------|----------|
+| `local` | Neo4j, Redis, LibSQL | Infrastructure only |
+| `test` | Infrastructure + Test Runner | Run integration tests |
+| `app` | GraphMem application | Production deployment |
+| `full` | All services | Full development stack |
+| `local-llm` | Ollama | Local LLM inference |
+
+### Service URLs (Local Mode)
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Neo4j Browser | http://localhost:7474 | neo4j / graphmem_password |
+| Neo4j Bolt | bolt://localhost:7687 | neo4j / graphmem_password |
+| Redis | redis://localhost:6379 | - |
+| LibSQL | http://localhost:8080 | - |
+| Ollama | http://localhost:11434 | - |
+
+## Go Report Card Compliance
+
+This project maintains 100% Go Report Card compliance:
+
+```bash
+# Format
+gofmt -w ./pkg/
+
+# Vet
+go vet ./...
+
+# Static analysis
+staticcheck ./...
+```
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+1. All tests pass: `go test ./...`
+2. Code is formatted: `gofmt -w .`
+3. No vet issues: `go vet ./...`
+4. No staticcheck issues: `staticcheck ./...`
