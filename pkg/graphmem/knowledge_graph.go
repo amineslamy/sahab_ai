@@ -188,16 +188,18 @@ func (kg *KnowledgeGraph) extractFromChunk(ctx context.Context, chunk, memoryID,
 			}
 		}
 
-		// Generate embedding
-		textToEmbed := name
-		if description != "" {
-			textToEmbed = fmt.Sprintf("%s: %s", name, description)
-		}
-		emb, err := kg.embeddings.Embed(ctx, textToEmbed)
-		if err != nil {
-			log.Printf("Warning: Failed to embed %s: %v", name, err)
-		} else {
-			node.Embedding = emb
+		// Generate embedding if provider is available
+		if kg.embeddings != nil {
+			textToEmbed := name
+			if description != "" {
+				textToEmbed = fmt.Sprintf("%s: %s", name, description)
+			}
+			emb, err := kg.embeddings.Embed(ctx, textToEmbed)
+			if err != nil {
+				log.Printf("Warning: Failed to embed %s: %v", name, err)
+			} else {
+				node.Embedding = emb
+			}
 		}
 
 		node.Properties["source_chunk"] = chunk[:min(len(chunk), 500)]

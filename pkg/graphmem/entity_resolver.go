@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -256,6 +257,9 @@ func (r *EntityResolver) Clear() {
 
 // GetEmbedding gets embedding for text (used for entity resolution).
 func (r *EntityResolver) GetEmbedding(ctx context.Context, text string) ([]float32, error) {
+	if r.embeddings == nil {
+		return nil, fmt.Errorf("embedding provider not configured")
+	}
 	return r.embeddings.Embed(ctx, text)
 }
 

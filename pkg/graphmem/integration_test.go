@@ -1018,11 +1018,21 @@ func TestTursoStoreIntegration(t *testing.T) {
 		localPath = "/tmp/graphmem-test.db"
 	}
 
+	// Get Turso URL and token for remote connection (Docker LibSQL)
+	tursoURL := os.Getenv("TURSO_DATABASE_URL")
+	tursoToken := os.Getenv("TURSO_AUTH_TOKEN")
+
 	store, err := NewTursoStore(&TursoStoreOptions{
 		DBPath:              localPath,
+		TursoURL:            tursoURL,
+		TursoAuthToken:      tursoToken,
 		EmbeddingDimensions: 3,
 	})
 	if err != nil {
+		// Skip if driver is not available (common in local dev)
+		if strings.Contains(err.Error(), "sqlite driver") || strings.Contains(err.Error(), "driver") {
+			t.Skipf("Skipping Turso test - SQLite driver not available: %v", err)
+		}
 		t.Fatalf("Failed to create Turso store: %v", err)
 	}
 	defer store.Close()

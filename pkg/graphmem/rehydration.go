@@ -144,6 +144,9 @@ func (gr *GraphRehydration) scoreRelevance(node *MemoryNode, contextEmbedding []
 		text = node.Name
 	}
 
+	if gr.embeddings == nil {
+		return 0.0
+	}
 	nodeEmbedding, err := gr.embeddings.Embed(context.Background(), text)
 	if err != nil || len(nodeEmbedding) == 0 {
 		return 0.0

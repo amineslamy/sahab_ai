@@ -68,6 +68,10 @@ func (ss *SemanticSearch) IndexNodes(ctx context.Context, nodes []*MemoryNode) e
 	ss.mu.Lock()
 	defer ss.mu.Unlock()
 
+	if ss.embeddings == nil {
+		return fmt.Errorf("embedding provider not configured")
+	}
+
 	for _, node := range nodes {
 		text := node.Description
 		if text == "" {
@@ -114,6 +118,9 @@ func (ss *SemanticSearch) Search(ctx context.Context, query string, topK int, mi
 	}
 
 	// Get query embedding
+	if ss.embeddings == nil {
+		return nil, fmt.Errorf("embedding provider not configured")
+	}
 	queryEmbedding, err := ss.embeddings.Embed(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to embed query: %w", err)
@@ -283,6 +290,9 @@ func (ss *SemanticSearch) UsingNeo4jVector() bool {
 func (ss *SemanticSearch) FindSimilarEntities(ctx context.Context, query string, entityNames []string, topK int) ([]string, error) {
 	if len(entityNames) == 0 {
 		return nil, nil
+	}
+	if ss.embeddings == nil {
+		return nil, fmt.Errorf("embedding provider not configured")
 	}
 
 	queryEmbedding, err := ss.embeddings.Embed(ctx, query)

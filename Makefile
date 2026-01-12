@@ -48,8 +48,8 @@ test-unit:
 test-integration:
 	@echo "Running integration tests..."
 	@echo "Make sure services are running (make services-up)"
-	@if [ -f .env ]; then set -a && . ./.env && set +a; fi && \
-	if [ -f docker.env ]; then set -a && . ./docker.env && set +a; fi && \
+	@if [ -f .env ]; then export $$(grep -v '^#' .env | grep -v '^\s*$$' | xargs); fi && \
+	if [ -f docker.env ]; then export $$(grep -v '^#' docker.env | grep -v '^\s*$$' | xargs); fi && \
 	go test -v -tags=integration -timeout=10m ./pkg/graphmem/...
 
 test-all: test-unit test-integration

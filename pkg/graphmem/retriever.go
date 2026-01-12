@@ -50,6 +50,9 @@ func (r *Retriever) Retrieve(ctx context.Context, query *MemoryQuery, memory *Me
 	}
 
 	// Get query embedding
+	if r.embeddings == nil {
+		return nil, fmt.Errorf("embedding provider not configured")
+	}
 	queryEmb, err := r.embeddings.Embed(ctx, query.Query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to embed query: %w", err)
