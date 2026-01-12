@@ -1,6 +1,6 @@
 module github.com/flancast90/GraphMem-go
 
-go 1.22.0
+go 1.24.0
 
 require (
 	github.com/google/uuid v1.6.0
@@ -16,4 +16,5 @@ require (
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
+	golang.org/x/net v0.49.0 // indirect
 )

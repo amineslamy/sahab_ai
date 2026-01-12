@@ -112,14 +112,14 @@ func (p *HighPerformancePipeline) IngestDocuments(ctx context.Context, documents
 
 	p.startTime = time.Now()
 
-	log.Printf("=" + strings.Repeat("=", 59))
-	log.Printf("🚀 HIGH-PERFORMANCE INGESTION PIPELINE")
-	log.Printf("=" + strings.Repeat("=", 59))
+	log.Printf("%s", "="+strings.Repeat("=", 59))
+	log.Printf("%s", "🚀 HIGH-PERFORMANCE INGESTION PIPELINE")
+	log.Printf("%s", "="+strings.Repeat("=", 59))
 	log.Printf("   Documents: %d", len(documents))
 	log.Printf("   Extraction workers: %d", p.config.MaxExtractionWorkers)
 	log.Printf("   Embedding workers: %d", p.config.MaxEmbeddingWorkers)
 	log.Printf("   Embedding batch size: %d", p.config.EmbeddingBatchSize)
-	log.Printf("=" + strings.Repeat("=", 59))
+	log.Printf("%s", "="+strings.Repeat("=", 59))
 
 	// Phase 1: Chunk all documents
 	log.Printf("\n📋 PHASE 1: Chunking documents")
@@ -149,16 +149,16 @@ func (p *HighPerformancePipeline) IngestDocuments(ctx context.Context, documents
 		}
 	}
 
-	log.Printf("\n" + strings.Repeat("=", 60))
-	log.Printf("✅ INGESTION COMPLETE")
-	log.Printf("=" + strings.Repeat("=", 59))
+	log.Printf("%s", "\n"+strings.Repeat("=", 60))
+	log.Printf("%s", "✅ INGESTION COMPLETE")
+	log.Printf("%s", "="+strings.Repeat("=", 59))
 	log.Printf("   Documents: %d (%d successful)", len(results), successCount)
 	log.Printf("   Entities: %d", p.stats.TotalEntities)
 	log.Printf("   Relationships: %d", p.stats.TotalRelationships)
 	log.Printf("   Embeddings: %d", p.stats.TotalEmbeddings)
 	log.Printf("   Time: %.2fs", elapsed)
 	log.Printf("   Throughput: %.2f docs/sec", float64(len(documents))/elapsed)
-	log.Printf("=" + strings.Repeat("=", 59))
+	log.Printf("%s", "="+strings.Repeat("=", 59))
 
 	return results, nil
 }
