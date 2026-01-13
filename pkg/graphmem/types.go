@@ -429,6 +429,44 @@ func (m *Memory) GetCluster(clusterID string) *MemoryCluster {
 	return m.Clusters[clusterID]
 }
 
+// RemoveNode removes a node and its associated edges from the memory.
+// Returns true if the node was found and removed.
+func (m *Memory) RemoveNode(nodeID string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, exists := m.Nodes[nodeID]; !exists {
+		return false
+	}
+
+	// Remove all edges connected to this node
+	for edgeID, edge := range m.Edges {
+		if edge.SourceID == nodeID || edge.TargetID == nodeID {
+			delete(m.Edges, edgeID)
+		}
+	}
+
+	// Remove the node
+	delete(m.Nodes, nodeID)
+	m.UpdatedAt = time.Now().UTC()
+	return true
+}
+
+// RemoveEdge removes an edge from the memory.
+// Returns true if the edge was found and removed.
+func (m *Memory) RemoveEdge(edgeID string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, exists := m.Edges[edgeID]; !exists {
+		return false
+	}
+
+	delete(m.Edges, edgeID)
+	m.UpdatedAt = time.Now().UTC()
+	return true
+}
+
 // GetAllNodes returns all nodes.
 func (m *Memory) GetAllNodes() []*MemoryNode {
 	m.mu.RLock()

@@ -1620,3 +1620,219 @@ GraphMem is a knowledge graph-based memory system for AI applications.
 		t.Error("Expected at least one chunk")
 	}
 }
+
+// =============================================================================
+// Direct Node/Edge Operation Tests
+// =============================================================================
+
+func TestDirectNodeOperationsIntegration(t *testing.T) {
+	skipIfNotTrue(t, "RUN_LLM_TESTS")
+	skipIfNoEnv(t, "OPENAI_API_KEY")
+
+	config := NewConfig()
+	config.LLMProvider = "openai"
+	config.LLMAPIKey = os.Getenv("OPENAI_API_KEY")
+	config.LLMModel = "gpt-4o-mini"
+	config.EmbeddingProvider = "openai"
+	config.EmbeddingAPIKey = os.Getenv("OPENAI_API_KEY")
+	config.EmbeddingModel = "text-embedding-3-small"
+	config.EvolutionEnabled = false
+
+	gm, err := New(config, WithUserID("test-user"), WithMemoryID("test-direct-nodes"))
+	if err != nil {
+		t.Fatalf("Failed to create GraphMem: %v", err)
+	}
+	defer gm.Close()
+
+	// Test 1: Add a node directly
+	node := NewMemoryNode("Jane Smith", "Person", "test-user", "test-direct-nodes")
+	node.Description = "CEO of TechStart Inc."
+	node.AddAlias("Jane")
+	node.AddAlias("Dr. Jane Smith")
+	node.Properties["title"] = "CEO"
+	node.Properties["email"] = "jane@techstart.io"
+	node.Properties["expertise"] = []string{"AI", "Product Management", "Strategy"}
+	node.Importance = ImportanceCritical
+
+	err = gm.AddNode(node)
+	if err != nil {
+		t.Fatalf("AddNode failed: %v", err)
+	}
+	t.Logf("Added node: %s (ID: %s)", node.Name, node.ID)
+
+	// Verify node was added
+	retrieved := gm.GetNode(node.ID)
+	if retrieved == nil {
+		t.Fatal("GetNode returned nil after adding node")
+	}
+	if retrieved.Name != "Jane Smith" {
+		t.Errorf("Expected name 'Jane Smith', got '%s'", retrieved.Name)
+	}
+	if retrieved.EntityType != "Person" {
+		t.Errorf("Expected entity type 'Person', got '%s'", retrieved.EntityType)
+	}
+	if retrieved.Description != "CEO of TechStart Inc." {
+		t.Errorf("Expected description 'CEO of TechStart Inc.', got '%s'", retrieved.Description)
+	}
+	if retrieved.Importance != ImportanceCritical {
+		t.Errorf("Expected importance CRITICAL, got %s", retrieved.Importance.String())
+	}
+
+	// Test 2: Add another node for relationships
+	companyNode := NewMemoryNode("TechStart Inc.", "Company", "test-user", "test-direct-nodes")
+	companyNode.Description = "AI startup focused on enterprise solutions"
+	companyNode.Properties["industry"] = "Technology"
+	companyNode.Properties["founded"] = 2020
+	companyNode.Importance = ImportanceHigh
+
+	err = gm.AddNode(companyNode)
+	if err != nil {
+		t.Fatalf("AddNode (company) failed: %v", err)
+	}
+	t.Logf("Added node: %s (ID: %s)", companyNode.Name, companyNode.ID)
+
+	// Test 3: Add an edge between nodes
+	edge := NewMemoryEdge(node.ID, companyNode.ID, "WORKS_AT", "test-direct-nodes")
+	edge.Description = "Jane Smith is the CEO of TechStart Inc."
+	edge.Properties["role"] = "CEO"
+	edge.Properties["since"] = 2020
+	edge.Weight = 1.0
+	edge.Confidence = 1.0
+
+	err = gm.AddEdge(edge)
+	if err != nil {
+		t.Fatalf("AddEdge failed: %v", err)
+	}
+	t.Logf("Added edge: %s -> %s (%s)", node.Name, companyNode.Name, edge.RelationType)
+
+	// Verify edge was added
+	retrievedEdge := gm.GetEdge(edge.ID)
+	if retrievedEdge == nil {
+		t.Fatal("GetEdge returned nil after adding edge")
+	}
+	if retrievedEdge.RelationType != "WORKS_AT" {
+		t.Errorf("Expected relation type 'WORKS_AT', got '%s'", retrievedEdge.RelationType)
+	}
+
+	// Test 4: Update node properties
+	err = gm.UpdateNode(node.ID, map[string]any{
+		"description": "CEO and Founder of TechStart Inc.",
+		"status":      "active",
+	})
+	if err != nil {
+		t.Fatalf("UpdateNode failed: %v", err)
+	}
+
+	updated := gm.GetNode(node.ID)
+	if updated.Description != "CEO and Founder of TechStart Inc." {
+		t.Errorf("Expected updated description, got '%s'", updated.Description)
+	}
+	if updated.Properties["status"] != "active" {
+		t.Errorf("Expected status 'active', got '%v'", updated.Properties["status"])
+	}
+	t.Log("Successfully updated node properties")
+
+	// Test 5: Verify graph stats
+	stats := gm.GetStats()
+	nodeCount, ok := stats["nodes"].(int)
+	if !ok || nodeCount < 2 {
+		t.Errorf("Expected at least 2 nodes, got %v", stats["nodes"])
+	}
+	edgeCount, ok := stats["edges"].(int)
+	if !ok || edgeCount < 1 {
+		t.Errorf("Expected at least 1 edge, got %v", stats["edges"])
+	}
+	t.Logf("Graph stats: %v nodes, %v edges", nodeCount, edgeCount)
+
+	// Test 6: Delete edge
+	err = gm.DeleteEdge(edge.ID)
+	if err != nil {
+		t.Fatalf("DeleteEdge failed: %v", err)
+	}
+	if gm.GetEdge(edge.ID) != nil {
+		t.Error("Edge still exists after deletion")
+	}
+	t.Log("Successfully deleted edge")
+
+	// Test 7: Delete node (should also remove associated edges)
+	// First, re-add the edge
+	edge2 := NewMemoryEdge(node.ID, companyNode.ID, "FOUNDED", "test-direct-nodes")
+	err = gm.AddEdge(edge2)
+	if err != nil {
+		t.Fatalf("AddEdge (edge2) failed: %v", err)
+	}
+
+	err = gm.DeleteNode(node.ID)
+	if err != nil {
+		t.Fatalf("DeleteNode failed: %v", err)
+	}
+	if gm.GetNode(node.ID) != nil {
+		t.Error("Node still exists after deletion")
+	}
+	// Edge should also be deleted when node is deleted
+	if gm.GetEdge(edge2.ID) != nil {
+		t.Error("Edge connected to deleted node still exists")
+	}
+	t.Log("Successfully deleted node and associated edges")
+
+	// Cleanup
+	gm.Clear()
+}
+
+func TestDirectNodeWithQueryIntegration(t *testing.T) {
+	skipIfNotTrue(t, "RUN_LLM_TESTS")
+	skipIfNoEnv(t, "OPENAI_API_KEY")
+
+	config := NewConfig()
+	config.LLMProvider = "openai"
+	config.LLMAPIKey = os.Getenv("OPENAI_API_KEY")
+	config.LLMModel = "gpt-4o-mini"
+	config.EmbeddingProvider = "openai"
+	config.EmbeddingAPIKey = os.Getenv("OPENAI_API_KEY")
+	config.EmbeddingModel = "text-embedding-3-small"
+	config.EvolutionEnabled = false
+
+	gm, err := New(config, WithUserID("test-user"), WithMemoryID("test-direct-query"))
+	if err != nil {
+		t.Fatalf("Failed to create GraphMem: %v", err)
+	}
+	defer gm.Close()
+
+	// Add structured data directly
+	john := NewMemoryNode("John Doe", "Person", "test-user", "test-direct-query")
+	john.Description = "Software engineer specializing in distributed systems"
+	john.Properties["skills"] = []string{"Go", "Python", "Kubernetes"}
+	john.Importance = ImportanceHigh
+	gm.AddNode(john)
+
+	acme := NewMemoryNode("Acme Corp", "Company", "test-user", "test-direct-query")
+	acme.Description = "Enterprise software company"
+	acme.Properties["industry"] = "Software"
+	acme.Importance = ImportanceMedium
+	gm.AddNode(acme)
+
+	employedEdge := NewMemoryEdge(john.ID, acme.ID, "EMPLOYED_BY", "test-direct-query")
+	employedEdge.Description = "John works at Acme Corp as a senior engineer"
+	gm.AddEdge(employedEdge)
+
+	t.Log("Added 2 nodes and 1 edge directly")
+
+	// Query the memory to find information about John
+	ctx := context.Background()
+	response, err := gm.QueryWithContext(ctx, "Who is John Doe and where does he work?")
+	if err != nil {
+		t.Fatalf("Query failed: %v", err)
+	}
+
+	t.Logf("Query response: %s", response.Answer)
+	t.Logf("Confidence: %.2f", response.Confidence)
+	t.Logf("Retrieved %d nodes", len(response.Nodes))
+
+	// The query should find the relevant nodes
+	if len(response.Nodes) == 0 {
+		t.Log("Warning: No nodes returned in query response (may depend on embedding similarity)")
+	}
+
+	// Cleanup
+	gm.Clear()
+}

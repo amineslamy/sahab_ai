@@ -525,6 +525,223 @@ func (gm *GraphMem) Save() error {
 	return gm.store.SaveMemory(gm.memory)
 }
 
+// =============================================================================
+// Direct Node/Edge Operations
+// =============================================================================
+
+// AddNode adds a node directly to the memory graph.
+// This allows creating entities from structured data without text extraction.
+func (gm *GraphMem) AddNode(node *MemoryNode) error {
+	if err := gm.ensureInitialized(); err != nil {
+		return err
+	}
+
+	// Set defaults if not provided
+	if node.UserID == "" {
+		node.UserID = gm.userID
+	}
+	if node.MemoryID == "" {
+		node.MemoryID = gm.memoryID
+	}
+	if node.ID == "" {
+		node.ID = node.GenerateID()
+	}
+
+	gm.memoryMu.Lock()
+	gm.memory.AddNode(node)
+	gm.memoryMu.Unlock()
+
+	// Save to store
+	if err := gm.store.SaveMemory(gm.memory); err != nil {
+		return NewStorageError("failed to save memory after adding node").
+			WithOperation("save").
+			WithCause(err)
+	}
+
+	// Invalidate cache
+	_ = gm.cache.Invalidate(gm.memoryID, gm.userID)
+
+	// Update metrics
+	gm.metrics.mu.Lock()
+	gm.metrics.TotalNodes = int64(gm.memory.NodeCount())
+	gm.metrics.mu.Unlock()
+
+	return nil
+}
+
+// AddEdge adds an edge (relationship) directly to the memory graph.
+func (gm *GraphMem) AddEdge(edge *MemoryEdge) error {
+	if err := gm.ensureInitialized(); err != nil {
+		return err
+	}
+
+	// Set defaults if not provided
+	if edge.MemoryID == "" {
+		edge.MemoryID = gm.memoryID
+	}
+	if edge.ID == "" {
+		edge.ID = edge.GenerateID()
+	}
+
+	gm.memoryMu.Lock()
+	gm.memory.AddEdge(edge)
+	gm.memoryMu.Unlock()
+
+	// Save to store
+	if err := gm.store.SaveMemory(gm.memory); err != nil {
+		return NewStorageError("failed to save memory after adding edge").
+			WithOperation("save").
+			WithCause(err)
+	}
+
+	// Invalidate cache
+	_ = gm.cache.Invalidate(gm.memoryID, gm.userID)
+
+	// Update metrics
+	gm.metrics.mu.Lock()
+	gm.metrics.TotalEdges = int64(gm.memory.EdgeCount())
+	gm.metrics.mu.Unlock()
+
+	return nil
+}
+
+// GetNode retrieves a node by ID.
+func (gm *GraphMem) GetNode(nodeID string) *MemoryNode {
+	if err := gm.ensureInitialized(); err != nil {
+		return nil
+	}
+
+	gm.memoryMu.RLock()
+	defer gm.memoryMu.RUnlock()
+
+	return gm.memory.GetNode(nodeID)
+}
+
+// GetEdge retrieves an edge by ID.
+func (gm *GraphMem) GetEdge(edgeID string) *MemoryEdge {
+	if err := gm.ensureInitialized(); err != nil {
+		return nil
+	}
+
+	gm.memoryMu.RLock()
+	defer gm.memoryMu.RUnlock()
+
+	return gm.memory.GetEdge(edgeID)
+}
+
+// UpdateNode updates an existing node's properties.
+func (gm *GraphMem) UpdateNode(nodeID string, updates map[string]any) error {
+	if err := gm.ensureInitialized(); err != nil {
+		return err
+	}
+
+	gm.memoryMu.Lock()
+	node := gm.memory.GetNode(nodeID)
+	if node == nil {
+		gm.memoryMu.Unlock()
+		return fmt.Errorf("node not found: %s", nodeID)
+	}
+
+	// Apply updates
+	for k, v := range updates {
+		switch k {
+		case "name":
+			if s, ok := v.(string); ok {
+				node.Name = s
+			}
+		case "description":
+			if s, ok := v.(string); ok {
+				node.Description = s
+			}
+		case "importance":
+			if imp, ok := v.(MemoryImportance); ok {
+				node.Importance = imp
+			}
+		default:
+			node.Properties[k] = v
+		}
+	}
+	node.UpdatedAt = time.Now().UTC()
+	gm.memoryMu.Unlock()
+
+	// Save to store
+	if err := gm.store.SaveMemory(gm.memory); err != nil {
+		return NewStorageError("failed to save memory after updating node").
+			WithOperation("save").
+			WithCause(err)
+	}
+
+	// Invalidate cache
+	_ = gm.cache.Invalidate(gm.memoryID, gm.userID)
+
+	return nil
+}
+
+// DeleteNode removes a node and its associated edges from the graph.
+func (gm *GraphMem) DeleteNode(nodeID string) error {
+	if err := gm.ensureInitialized(); err != nil {
+		return err
+	}
+
+	gm.memoryMu.Lock()
+	deleted := gm.memory.RemoveNode(nodeID)
+	gm.memoryMu.Unlock()
+
+	if !deleted {
+		return fmt.Errorf("node not found: %s", nodeID)
+	}
+
+	// Save to store
+	if err := gm.store.SaveMemory(gm.memory); err != nil {
+		return NewStorageError("failed to save memory after deleting node").
+			WithOperation("save").
+			WithCause(err)
+	}
+
+	// Invalidate cache
+	_ = gm.cache.Invalidate(gm.memoryID, gm.userID)
+
+	// Update metrics
+	gm.metrics.mu.Lock()
+	gm.metrics.TotalNodes = int64(gm.memory.NodeCount())
+	gm.metrics.TotalEdges = int64(gm.memory.EdgeCount())
+	gm.metrics.mu.Unlock()
+
+	return nil
+}
+
+// DeleteEdge removes an edge from the graph.
+func (gm *GraphMem) DeleteEdge(edgeID string) error {
+	if err := gm.ensureInitialized(); err != nil {
+		return err
+	}
+
+	gm.memoryMu.Lock()
+	deleted := gm.memory.RemoveEdge(edgeID)
+	gm.memoryMu.Unlock()
+
+	if !deleted {
+		return fmt.Errorf("edge not found: %s", edgeID)
+	}
+
+	// Save to store
+	if err := gm.store.SaveMemory(gm.memory); err != nil {
+		return NewStorageError("failed to save memory after deleting edge").
+			WithOperation("save").
+			WithCause(err)
+	}
+
+	// Invalidate cache
+	_ = gm.cache.Invalidate(gm.memoryID, gm.userID)
+
+	// Update metrics
+	gm.metrics.mu.Lock()
+	gm.metrics.TotalEdges = int64(gm.memory.EdgeCount())
+	gm.metrics.mu.Unlock()
+
+	return nil
+}
+
 // Close closes connections and cleanup resources.
 func (gm *GraphMem) Close() error {
 	if gm.store != nil {
