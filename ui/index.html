@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه مدیریت حافظه گرافی - سحاب AI</title>
+    <!-- Tailwind CSS -->
+    <script src="js/lib/tailwindcss.js"></script>
+    <!-- D3.js -->
+    <script src="js/lib/d3.v7.min.js"></script>
+    <script src="js/lib/d3.layout.cloud.js"></script>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+        }
+    </style>
+    <link rel="icon" href="data:,"> 
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold">🧠 داشبورد مدیریت حافظه گرافی (Sahab AI)</h1>
+        <div id="server-status" class="text-sm px-3 py-1 rounded bg-yellow-600">در حال بررسی اتصال...</div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+
+        <!-- Sidebar / Settings -->
+        <div class="bg-white p-6 rounded-lg shadow-md md:col-span-1">
+            <h2 class="text-lg font-bold border-b pb-2 mb-4">⚙️ تنظیمات سرویس‌ها</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">آدرس API مدل (LLM Base URL):</label>
+                    <input id="cfg-url" type="text" class="w-full p-2 border rounded bg-gray-50 text-left text-sm"
+                        readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">مدل فعال:</label>
+                    <input id="cfg-model" type="text" class="w-full p-2 border rounded bg-gray-50 text-left text-sm"
+                        readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">آدرس Neo4j:</label>
+                    <input id="cfg-neo4j" type="text" class="w-full p-2 border rounded bg-gray-50 text-left text-sm"
+                        readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">آدرس Redis:</label>
+                    <input id="cfg-redis" type="text" class="w-full p-2 border rounded bg-gray-50 text-left text-sm"
+                        readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Panel / Visualization & Testing -->
+        <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 space-y-6">
+            <div>
+                <h2 class="text-lg font-bold border-b pb-2 mb-4">💬 استخراج و ثبت در حافظه</h2>
+                <textarea id="input-text"
+                    class="w-full p-3 border rounded h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="متن مورد نظر برای استخراج موجودیت‌ها و روابط را وارد کنید..."></textarea>
+                <button onclick="processMemory()"
+                    class="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition shadow">
+                    پردازش و استخراج گراف
+                </button>
+            </div>
+
+            <!-- Graph Canvas -->
+            <div>
+                <h2 class="text-lg font-bold border-b pb-2 mb-4">📊 نمایش گراف دانش (D3.js)</h2>
+                <div id="graph-container"
+                    class="w-full h-80 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400">
+                    مکان رندر شبکه گرافیکی D3.js
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+
+                document.getElementById('cfg-url').value = data.base_url || 'تعریف‌نشده';
+                document.getElementById('cfg-model').value = data.model || 'تعریف‌نشده';
+                document.getElementById('cfg-neo4j').value = data.neo4j_uri || 'تعریف‌نشده';
+                document.getElementById('cfg-redis').value = data.redis_url || 'تعریف‌نشده';
+
+                const statusBtn = document.getElementById('server-status');
+                statusBtn.innerText = 'اتصال متصل است';
+                statusBtn.className = 'text-sm px-3 py-1 rounded bg-green-600';
+            } catch (err) {
+                const statusBtn = document.getElementById('server-status');
+                statusBtn.innerText = 'قطع ارتباط با سرور Go';
+                statusBtn.className = 'text-sm px-3 py-1 rounded bg-red-600';
+            }
+        }
+
+        async function processMemory() {
+            const text = document.getElementById('input-text').value;
+            if (!text) return alert('لطفاً متنی وارد کنید.');
+
+            const container = document.getElementById('graph-container');
+            container.innerHTML = '<span class="text-blue-600 font-bold">در حال پردازش با اولاما... لطفا صبر کنید.</span>';
+
+            try {
+                const res = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await res.json();
+
+                // رسم گراف D3 ساده
+                renderD3Graph(data.nodes, data.links);
+            } catch (err) {
+                container.innerHTML = '<span class="text-red-500">خطا در پردازش اطلاعات!</span>';
+            }
+        }
+
+        function renderD3Graph(nodes, links) {
+            const container = document.getElementById('graph-container');
+            container.innerHTML = ''; // پاکسازی قبلی
+
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            const svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .attr("stroke", "#999")
+                .attr("stroke-width", 2);
+
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .enter().append("circle")
+                .attr("r", 15)
+                .attr("fill", d => d.group === 1 ? "#3b82f6" : "#10b981");
+
+            const text = svg.append("g")
+                .selectAll("text")
+                .data(nodes)
+                .enter().append("text")
+                .text(d => d.id)
+                .attr("font-size", "12px")
+                .attr("dx", 18)
+                .attr("dy", 4);
+
+            simulation.on("tick", () => {
+                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                node.attr("cx", d => d.x).attr("cy", d => d.y);
+                text.attr("x", d => d.x).attr("y", d => d.y);
+            });
+        }
+
+        window.onload = loadConfig;
+    </script>
+</body>
+
+</html>
