@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>راهنمای راه‌اندازی سحاب AI</title>
+    <!-- Tailwind CSS -->
+    <script src="ui\js\lib\tailwindcss.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('ui/fonts/Vazirmatn-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        body {
+            font-family: Vazirmatn, Tahoma, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen py-10 px-4">
+
+    <div class="max-w-4xl mx-auto space-y-8">
+
+        <!-- Header -->
+        <header
+            class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm text-center md:text-right flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">🚀 راهنمای راه‌اندازی سریع
+                    سحاب AI</h1>
+                <p class="text-slate-500 text-sm mt-1">دستورالعمل جامع اجرای مجدد زیرساخت و سرویس‌ها پس از ری‌استارت
+                    سیستم</p>
+            </div>
+            <span
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                آماده اجرا
+            </span>
+        </header>
+
+        <!-- Pre-requisites -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm">
+            <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span class="text-blue-600">📌</span> پیش‌نیازهای دائم روی سیستم
+            </h2>
+            <p class="text-slate-600 text-sm mb-6">قبل از اجرای هر دستوری، مطمئن شوید نرم‌افزارهای زیر روی ویندوز نصب و
+                آماده به کار هستند:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-blue-200 transition">
+                    <div class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <span>🐳</span> Docker Desktop
+                    </div>
+                    <div class="text-xs text-slate-500">برای مدیریت دیتابیس‌ها (با قابلیت پشتیبانی از WSL 2)</div>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-blue-200 transition">
+                    <div class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <span>🦙</span> Ollama
+                    </div>
+                    <div class="text-xs text-slate-500">برای اجرای مدل هوش مصنوعی محلی (<code
+                            class="bg-slate-200 px-1 rounded text-slate-700">qwen2.5:3b</code>)</div>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-blue-200 transition">
+                    <div class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <span>🐹</span> Go Compiler
+                    </div>
+                    <div class="text-xs text-slate-500">زبان برنامه‌نویسی Go (نسخه ۱.۲۱ یا بالاتر)</div>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-blue-200 transition">
+                    <div class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <span>📦</span> Git
+                    </div>
+                    <div class="text-xs text-slate-500">برای مدیریت سورس‌کد و همگام‌سازی گیت‌هاب</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Setup Steps -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm">
+            <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <span class="text-blue-600">🔄</span> مراحل راه‌اندازی سیستم پس از ری‌استارت
+            </h2>
+
+            <div class="space-y-6">
+                <!-- Step 1 -->
+                <div class="flex gap-4 items-start">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        ۱</div>
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-slate-800">حصول اطمینان از اجرای سرویس‌های پایه</h3>
+                        <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                            <li><strong>Docker Desktop</strong> را اجرا کنید و صبر کنید تا آیکون آن در نوار وظیفه
+                                (Taskbar) حالت سبز و فعال پیدا کند.</li>
+                            <li>مطمئن شوید <strong>Ollama</strong> در حال اجراست (معمولاً پس از ری‌استارت به‌طور خودکار
+                                در پس‌زمینه بالا می‌آید یا می‌توانید آن را از Start اجرا کنید).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Step 2 -->
+                <div class="flex gap-4 items-start">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        ۲</div>
+                    <div class="space-y-3 w-full">
+                        <h3 class="font-bold text-slate-800">روشن کردن سرویس‌های دیتابیس (Docker)</h3>
+                        <p class="text-sm text-slate-600">یک ترمینال CMD باز کرده و دستورات زیر را وارد کنید:</p>
+
+                        <div
+                            class="bg-slate-900 text-slate-100 rounded-xl p-4 font-mono text-sm dir-ltr text-left relative group">
+                            <code>cd /d D:\PY\sahab_ai<br>docker compose --profile local up -d</code>
+                        </div>
+
+                        <p class="text-sm text-slate-600">برای اطمینان از سلامت دیتابیس‌ها (Neo4j, Redis, LibSQL) دستور
+                            زیر را بزنید:</p>
+
+                        <div class="bg-slate-900 text-slate-100 rounded-xl p-4 font-mono text-sm dir-ltr text-left">
+                            <code>docker compose ps</code>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Step 3 -->
+                <div class="flex gap-4 items-start">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        ۳</div>
+                    <div class="space-y-3 w-full">
+                        <h3 class="font-bold text-slate-800">اجرای وب‌سرور پروژه (Go)</h3>
+                        <p class="text-sm text-slate-600">در همان ترمینال CMD دستور زیر را بزنید تا برنامه اصلی روشن
+                            شود:</p>
+
+                        <div class="bg-slate-900 text-slate-100 rounded-xl p-4 font-mono text-sm dir-ltr text-left">
+                            <code>go run main.go</code>
+                        </div>
+
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 text-sm font-medium">
+                            با مشاهده این پیام در ترمینال، سرور آماده پاسخ‌گویی است: <br>
+                            <span class="font-mono dir-ltr inline-block mt-1 font-bold">🚀 وب سرور سحاب AI آماده است:
+                                http://localhost:8081</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Step 4 -->
+                <div class="flex gap-4 items-start">
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        ۴</div>
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-slate-800">دسترسی به رابط کاربری (UI)</h3>
+                        <p class="text-sm text-slate-600">مرورگر اینترنت خود را باز کرده و به آدرس زیر بروید:</p>
+                        <a href="http://localhost:8081" target="_blank"
+                            class="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:underline font-mono dir-ltr">
+                            http://localhost:8081
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick One-liner -->
+        <section class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 md:p-8 text-white shadow-lg">
+            <h2 class="text-lg font-bold mb-2 flex items-center gap-2">
+                <span>⚡</span> خلاصه‌ی یک‌خطی جهت اجرا (برای استفاده سریع)
+            </h2>
+            <p class="text-blue-100 text-xs mb-4">می‌توانید تمام مراحل فوق را در یک خط دستور CMD اجرا کنید:</p>
+
+            <div
+                class="bg-slate-900/80 backdrop-blur border border-white/10 rounded-xl p-4 font-mono text-sm dir-ltr text-left text-green-400 select-all overflow-x-auto">
+                <code>cd /d D:\PY\sahab_ai && docker compose --profile local up -d && go run main.go</code>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+
+</html>
