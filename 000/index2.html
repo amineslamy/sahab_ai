@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ویرایشگر و نمایش‌دهنده مارک‌داون سحاب</title>
+
+    <!-- Tailwind CSS (آفلاین) -->
+    <script src="js/lib/tailwindcss.js"></script>
+
+    <!-- Marked.js برای تبدیل MD به HTML (آفلاین - نسخه UMD) -->
+    <script src="js/lib/marked.umd.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Regular.woff2') format('woff2');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Bold.woff2') format('woff2');
+            font-weight: 700;
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Black.woff2') format('woff2');
+            font-weight: 900;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        /* استایل و اندازه فونت Monospace */
+        .monospace-font {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* استایل اختصاصی خروجی مارک‌داون */
+        .markdown-body {
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .markdown-body h1 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #334155;
+            margin: 0.75rem 0 0.5rem 0;
+        }
+
+        .markdown-body p {
+            margin-bottom: 0.8rem;
+        }
+
+        .markdown-body ul {
+            list-style: disc;
+            padding-right: 1.25rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .markdown-body ol {
+            list-style: decimal;
+            padding-right: 1.25rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .markdown-body code {
+            background: #f1f5f9;
+            color: #0284c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.375rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.95rem;
+            direction: ltr;
+            display: inline-block;
+        }
+
+        .markdown-body pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .markdown-body blockquote {
+            border-right: 4px solid #3b82f6;
+            padding-right: 0.8rem;
+            color: #64748b;
+            background: #eff6ff;
+            padding-top: 0.4rem;
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.8rem;
+        }
+
+        .markdown-body th,
+        .markdown-body td {
+            border: 1px solid #cbd5e1;
+            padding: 0.4rem 0.6rem;
+            text-align: right;
+        }
+
+        .markdown-body th {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center gap-3">
+            <h1 class="text-lg font-black text-slate-900">✏️ ویرایشگر دوپنلی سحاب AI</h1>
+            <span id="file-indicator" class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded border">هیچ فایلی باز
+                نشده است</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- باز کردن فایل -->
+            <label
+                class="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <span>📂 باز کردن فایل</span>
+                <input type="file" id="file-input" accept=".md" class="hidden">
+            </label>
+
+            <!-- دانلود / ذخیره فایل -->
+            <button onclick="downloadMarkdown()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <span>💾 دانلود فایل تغییریافته</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Live Editor Layout -->
+    <main class="flex-1 flex overflow-hidden">
+
+        <!-- پنل راست: پیش‌نمایش زنده -->
+        <div id="preview-container"
+            class="w-1/2 border-l border-slate-200 bg-slate-50 flex flex-col p-4 overflow-y-auto">
+            <label class="text-xs font-bold text-slate-500 mb-2 block">پیش‌نمایش زنده (Live Preview):</label>
+            <div id="preview" class="markdown-body bg-white p-6 border rounded-xl shadow-sm min-h-full">
+                <span class="text-slate-400 text-sm">پیش‌نمایش متن شما در اینجا دیده خواهد شد...</span>
+            </div>
+        </div>
+
+        <!-- پنل چپ: کد خام Markdown (ورودی) -->
+        <div class="w-1/2 bg-white flex flex-col p-4">
+            <label class="text-xs font-bold text-slate-500 mb-2 block">متن raw مارک‌داون (قابل ویرایش):</label>
+            <textarea id="editor"
+                class="monospace-font flex-1 w-full p-4 border rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dir-ltr text-left"
+                placeholder="# متن مارک‌داون خود را اینجا بنویسید یا فایلی باز کنید..."></textarea>
+        </div>
+
+    </main>
+
+    <script>
+        let currentFileName = "document.md";
+        const editor = document.getElementById('editor');
+        const previewContainer = document.getElementById('preview-container');
+        const preview = document.getElementById('preview');
+
+        let isSyncingEditor = false;
+        let isSyncingPreview = false;
+
+        // همگام‌سازی اسکرول از ویرایشگر به پیش‌نمایش
+        editor.addEventListener('scroll', () => {
+            if (isSyncingPreview) {
+                isSyncingPreview = false;
+                return;
+            }
+            isSyncingEditor = true;
+            const percentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+            previewContainer.scrollTop = percentage * (previewContainer.scrollHeight - previewContainer.clientHeight);
+        });
+
+        // همگام‌سازی اسکرول از پیش‌نمایش به ویرایشگر
+        previewContainer.addEventListener('scroll', () => {
+            if (isSyncingEditor) {
+                isSyncingEditor = false;
+                return;
+            }
+            isSyncingPreview = true;
+            const percentage = previewContainer.scrollTop / (previewContainer.scrollHeight - previewContainer.clientHeight);
+            editor.scrollTop = percentage * (editor.scrollHeight - editor.clientHeight);
+        });
+
+        // آپدیت همزمان پیش‌نمایش هنگام تایپ کردن
+        editor.addEventListener('input', () => {
+            renderMarkdown(editor.value);
+        });
+
+        function renderMarkdown(content) {
+            if (window.marked) {
+                preview.innerHTML = marked.parse(content || '');
+            } else {
+                preview.innerHTML = '<span class="text-red-500">خطا: کتابخانه marked.umd.min.js یافت نشد.</span>';
+            }
+        }
+
+        // خواندن فایل از سیستم
+        document.getElementById('file-input').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            currentFileName = file.name;
+            document.getElementById('file-indicator').innerText = 'در حال ویرایش: ' + currentFileName;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                editor.value = e.target.result;
+                renderMarkdown(editor.value);
+            };
+            reader.readAsText(file);
+        });
+
+        // دانلود متون ویرایش‌شده
+        function downloadMarkdown() {
+            const text = editor.value;
+            if (!text) return alert("متنی برای ذخیره‌سازی وجود ندارد.");
+
+            const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = currentFileName;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+    </script>
+
+</body>
+
+</html>

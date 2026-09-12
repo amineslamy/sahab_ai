@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نمایش‌دهنده فایل‌های مارک‌داون</title>
+
+    <!-- Tailwind CSS (آفلاین) -->
+    <script src="js/lib/tailwindcss.js"></script>
+
+    <!-- Marked.js برای تبدیل MD به HTML (آفلاین) -->
+    <script src="js/lib/marked.umd.min.js"></script>
+
+    <style>
+        /* تنظیم فونت وزیرمتن از پوشه fonts */
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Bold.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('fonts/Vazirmatn-Black.woff2') format('woff2');
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        /* استایل اختصاصی برای محتوای مارک‌داون رندر شده */
+        .markdown-body {
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .markdown-body h1 {
+            font-size: 1.875rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #334155;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+            padding-right: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body ol {
+            list-style-type: decimal;
+            padding-right: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.25rem;
+        }
+
+        .markdown-body code {
+            background-color: #f1f5f9;
+            color: #0284c7;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-family: monospace;
+            font-size: 1rem;
+            direction: ltr;
+            display: inline-block;
+        }
+
+        .markdown-body pre {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .markdown-body blockquote {
+            border-right: 4px solid #3b82f6;
+            padding-right: 1rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            background-color: #eff6ff;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body th,
+        .markdown-body td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            text-align: right;
+        }
+
+        .markdown-body th {
+            background-color: #f8fafc;
+            font-weight: 900;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen py-8 px-4">
+
+    <div class="max-w-5xl mx-auto space-y-6">
+
+        <!-- هدر و انتخاب فایل -->
+        <header
+            class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900">📄 مستندات و مستندات مارک‌داون</h1>
+                <p class="text-xs text-slate-500 mt-1">مشاهده آفلاین فایل‌های Markdown با فونت وزیرمتن</p>
+            </div>
+
+            <!-- دکمه انتخاب فایل محلی -->
+            <div class="w-full md:w-auto">
+                <label for="file-input"
+                    class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 w-full md:w-auto shadow-sm">
+                    <span>📂 انتخاب فایل Markdown</span>
+                    <input type="file" id="file-input" accept=".md" class="hidden">
+                </label>
+            </div>
+        </header>
+
+        <!-- بخش نمایش نام فایل انتخاب شده -->
+        <div id="file-info"
+            class="hidden bg-blue-50 border border-blue-200 text-blue-800 text-sm font-bold px-4 py-3 rounded-xl flex items-center justify-between">
+            <span id="file-name">نام فایل: -</span>
+            <span class="text-xs bg-blue-200 px-2 py-1 rounded text-blue-900 font-normal">آماده نمایش</span>
+        </div>
+
+        <!-- کارت اصلی نمایش محتوای مارک‌داون -->
+        <main class="bg-white border border-slate-200 rounded-2xl p-6 md:p-10 shadow-sm">
+            <div id="markdown-viewer" class="markdown-body">
+                <div class="text-center py-12 text-slate-400 space-y-3">
+                    <div class="text-4xl">📄</div>
+                    <p class="font-bold">لطفاً یکی از فایل‌های <code
+                            class="bg-slate-100 text-slate-600 px-2 py-1 rounded">.md</code> پوشه را از دکمه بالا انتخاب
+                        کنید.</p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // نمایش اطلاعات فایل
+            document.getElementById('file-info').classList.remove('hidden');
+            document.getElementById('file-name').innerText = 'نام فایل انتخاب‌شده: ' + file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = e.target.result;
+
+                // رندر کردن مارک‌داون با استفاده از Marked.js
+                if (window.marked) {
+                    document.getElementById('markdown-viewer').innerHTML = marked.parse(content);
+                } else {
+                    document.getElementById('markdown-viewer').innerHTML =
+                        '<div class="text-red-500 font-bold p-4 bg-red-50 rounded-xl">خطا: کتابخانه marked.min.js پیدا نشد. لطفاً فایل آن را در مسیر js/lib قرار دهید.</div>';
+                }
+            };
+            reader.readAsText(file);
+        });
+    </script>
+</body>
+
+</html>
