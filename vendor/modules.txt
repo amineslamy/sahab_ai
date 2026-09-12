@@ -1,0 +1,86 @@
+# github.com/antlr4-go/antlr/v4 v4.13.0
+## explicit; go 1.20
+github.com/antlr4-go/antlr/v4
+# github.com/cespare/xxhash/v2 v2.2.0
+## explicit; go 1.11
+github.com/cespare/xxhash/v2
+# github.com/coder/websocket v1.8.12
+## explicit; go 1.19
+github.com/coder/websocket
+github.com/coder/websocket/internal/bpool
+github.com/coder/websocket/internal/errd
+github.com/coder/websocket/internal/util
+github.com/coder/websocket/internal/wsjs
+github.com/coder/websocket/internal/xsync
+github.com/coder/websocket/wsjson
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+## explicit
+github.com/dgryski/go-rendezvous
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid
+# github.com/joho/godotenv v1.5.1
+## explicit; go 1.12
+github.com/joho/godotenv
+# github.com/ledongthuc/pdf v0.0.0-20260907135840-6c8c28e0e8a0
+## explicit; go 1.24.1
+# github.com/neo4j/neo4j-go-driver/v5 v5.27.0
+## explicit; go 1.18
+github.com/neo4j/neo4j-go-driver/v5/neo4j
+github.com/neo4j/neo4j-go-driver/v5/neo4j/auth
+github.com/neo4j/neo4j-go-driver/v5/neo4j/config
+github.com/neo4j/neo4j-go-driver/v5/neo4j/db
+github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/auth
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/bolt
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/boltagent
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/collections
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/connector
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/db
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/errorutil
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/gql
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/metadata
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/notifications
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/packstream
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/pool
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/racing
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/retry
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/router
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/telemetry
+github.com/neo4j/neo4j-go-driver/v5/neo4j/internal/time
+github.com/neo4j/neo4j-go-driver/v5/neo4j/log
+github.com/neo4j/neo4j-go-driver/v5/neo4j/notifications
+# github.com/nguyenthenguyen/docx v0.0.0-20230621112118-9c8e795a11db
+## explicit; go 1.16
+# github.com/redis/go-redis/v9 v9.7.0
+## explicit; go 1.18
+github.com/redis/go-redis/v9
+github.com/redis/go-redis/v9/internal
+github.com/redis/go-redis/v9/internal/hashtag
+github.com/redis/go-redis/v9/internal/hscan
+github.com/redis/go-redis/v9/internal/pool
+github.com/redis/go-redis/v9/internal/proto
+github.com/redis/go-redis/v9/internal/rand
+github.com/redis/go-redis/v9/internal/util
+# github.com/sashabaranov/go-openai v1.36.0
+## explicit; go 1.18
+github.com/sashabaranov/go-openai
+github.com/sashabaranov/go-openai/internal
+# github.com/tursodatabase/libsql-client-go v0.0.0-20240902231107-85af5b9d094d
+## explicit; go 1.20
+github.com/tursodatabase/libsql-client-go/libsql
+github.com/tursodatabase/libsql-client-go/libsql/internal/hrana
+github.com/tursodatabase/libsql-client-go/libsql/internal/http
+github.com/tursodatabase/libsql-client-go/libsql/internal/http/hranaV2
+github.com/tursodatabase/libsql-client-go/libsql/internal/http/shared
+github.com/tursodatabase/libsql-client-go/libsql/internal/ws
+github.com/tursodatabase/libsql-client-go/sqliteparser
+github.com/tursodatabase/libsql-client-go/sqliteparserutils
+# golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
+## explicit; go 1.20
+golang.org/x/exp/constraints
+golang.org/x/exp/slices
+# golang.org/x/net v0.49.0
+## explicit; go 1.24.0
+golang.org/x/net/html
+golang.org/x/net/html/atom

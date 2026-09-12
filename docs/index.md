@@ -1,3 +1,262 @@
+ترجمه فارسی و دقیق فایل `index.md` (نخستین فایل از پوشه مستندات) آماده شد. این متن را می‌توانید مستقیماً در فایل `index.md` پروژه قرار دهید:
+
+---
+
+# 🧠 GraphMem-Go
+
+## **مغز انسان برای عامل‌های هوش مصنوعی شما**
+
+> **"حافظه، گنجینه و نگهبان همه چیز است."** — سیسرون
+
+پروژه GraphMem **نخستین سیستم حافظه‌ای است که همانند مغز انسان فکر می‌کند**. این سیستم صرفاً داده‌ها را ذخیره نمی‌کند؛ بلکه دقیقاً مانند حافظه زیستی **فراموش می‌کند**، **تثبیت و یکپارچه می‌سازد**، **اولویه‌بندی می‌کند** و **تکامل می‌یابد**.
+
+**این آینده عامل‌های هوش مصنوعی سازمانی است.**
+
+---
+
+## 🧬 چرا GraphMem همه چیز را تغییر می‌دهد؟
+
+### مشکل حافظه‌های فعلی هوش مصنوعی
+
+همه عامل‌های هوش مصنوعی عملیاتی با بحران یکسانی مواجه هستند:
+
+```text
+روز ۱:    "مدیرعامل کیست؟" ← "ایلان ماسک" ✅
+روز ۱۰۰:  پنجره بافت (Context Window): سرریز و انفجار 💥
+روز ۳۶۵:  "مدیرعامل کیست؟" ← "جان... یا شاید جین... شایدم ایلان؟" 🤯
+
+```
+
+**پایگاه‌های داده برداری فراموش نمی‌کنند.** آن‌ها اطلاعات زائد را تجمع می‌دهند تا زمانی که عامل شما در داده‌های غیرمرتبط، متناقض و قدیمی غرق شود.
+
+### راهکار GraphMem: حافظه‌ای که فکر می‌کند
+
+پروژه GraphMem **چهار رکن حافظه انسانی** را پیاده‌سازی می‌کند:
+
+| مغز انسان | GraphMem | چرا اهمیت دارد؟ |
+| --- | --- | --- |
+| 🧠 **منحنی فراموشی** | زوال حافظه (Memory Decay) | حافظه‌های غیرمرتبط به صورت طبیعی محو می‌شوند
+
+ |
+| 🔗 **شبکه‌های عصبی** | گراف دانش (Knowledge Graph) | روابط میان مفاهیم درک می‌شود
+
+ |
+| ⭐ **وزن‌دهی اهمیت** | مرکزیت PageRank | مفاهیم کلیدی (مانند ایلان ماسک) > مفاهیم حاشیه‌ای
+
+ |
+| ⏰ **حافظه رویدادی** | اعتبار زمانی (Temporal Validity) | "مدیرعامل در سال ۲۰۱۵" در برابر "مدیرعامل فعلی"
+
+ |
+
+---
+
+## 🚀 شروع سریع
+
+### نصب
+
+```bash
+go get github.com/flancast90/GraphMem-go
+
+```
+
+### استفاده پایه
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/flancast90/GraphMem-go/pkg/graphmem"
+)
+
+func main() {
+    // ساخت پیکربندی (خواندن از متغیرهای محیطی)
+    config := graphmem.NewConfig()
+    config.LLMAPIKey = os.Getenv("OPENAI_API_KEY")
+
+    // ساخت نمونه GraphMem
+    gm, err := graphmem.New(config,
+        graphmem.WithUserID("my_agent"),
+        graphmem.WithAutoEvolve(true),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer gm.Close()
+
+    // تمام شد؛ فقط ۳ متد اصلی:
+    result, _ := gm.Ingest("تسلا توسط مدیرعامل ایلان ماسک رهبری می‌شود...")  // ← استخراج دانش
+    response, _ := gm.Query("مدیرعامل کیست؟")                              // ← پرسش و پاسخ
+    gm.Evolve()                                                          // ← پختگی و تکامل حافظه
+
+    fmt.Printf("%d موجودیت استخراج شد\n", result.Entities)
+    fmt.Println("پاسخ:", response.Answer)
+}
+
+```
+
+### همراه با ماندگاری داده‌ها (Neo4j)
+
+```go
+config := graphmem.NewConfig()
+config.LLMAPIKey = os.Getenv("OPENAI_API_KEY")
+config.Neo4jURI = "bolt://localhost:7687"
+config.Neo4jUser = "neo4j"
+config.Neo4jPassword = "password"
+
+gm, err := graphmem.New(config,
+    graphmem.WithUserID("my_agent"),
+)
+// داده‌ها بین اجرای مجدد برنامه باقی می‌مانند!
+
+```
+
+### همراه با بافر کش (Redis)
+
+```go
+config := graphmem.NewConfig()
+config.RedisURL = "redis://localhost:6379"
+
+gm, err := graphmem.New(config,
+    graphmem.WithUserID("my_agent"),
+)
+// پرس‌وجوها برای افزایش کارایی کش می‌شوند!
+
+```
+
+### استفاده از سرویس‌دهندگان مختلف LLM
+
+```go
+// OpenAI (پیش‌فرض)
+config := graphmem.NewConfig()
+config.LLMProvider = "openai"
+config.LLMAPIKey = os.Getenv("OPENAI_API_KEY")
+config.LLMModel = "gpt-4o-mini"
+
+// Anthropic Claude
+config.LLMProvider = "anthropic"
+config.LLMAPIKey = os.Getenv("ANTHROPIC_API_KEY")
+config.LLMModel = "claude-3-haiku-20240307"
+
+// Azure OpenAI
+config.LLMProvider = "azure_openai"
+config.AzureOpenAIEndpoint = "https://your-resource.openai.azure.com"
+config.AzureOpenAIDeployment = "gpt-4"
+config.LLMAPIKey = os.Getenv("AZURE_OPENAI_API_KEY")
+
+// Ollama محلی
+config.LLMProvider = "ollama"
+config.OllamaBaseURL = "http://localhost:11434"
+config.LLMModel = "llama3.2"
+
+```
+
+---
+
+## 🎯 ویژگی‌های تحول‌آفرین
+
+### حافظه مبتنی بر نقطه زمانی
+
+پرس‌وجو در گذشته: *"در سال ۲۰۱۵ مدیرعامل چه کسی بود؟"*
+
+[بیشتر بدانید ←](https://www.google.com/search?q=concepts/temporal.md)
+
+### گراف دانش
+
+استخراج خودکار موجودیت‌ها و نگاشت روابط
+
+[بیشتر بدانید ←](https://www.google.com/search?q=concepts/knowledge-graph.md)
+
+### خودتکاملی
+
+حافظه‌ای که یکپارچه می‌شود، زوال می‌یابد و بهبود می‌یابد
+
+[بیشتر بدانید ←](https://www.google.com/search?q=concepts/evolution.md)
+
+### جداسازی چندمستأجره (Multi-Tenant Isolation)
+
+جداسازی کامل داده‌ها برای مصارف سازمانی
+
+[بیشتر بدانید ←](https://www.google.com/search?q=concepts/multi-tenancy.md)
+
+---
+
+## 📊 عملکرد
+
+| معیار | RAG معمولی | GraphMem | مزیت |
+| --- | --- | --- | --- |
+| **۱,۰۰۰ گفتگو** | 💥 سرریز بافت | ✅ محدود و مدیریت‌شده | پشتیبانی از رشد داده
+
+ |
+| **۱۰,۰۰۰ موجودیت** | O(n) = ۲.۳ ثانیه | O(1) = ۵۰ میلی‌ثانیه | **۴۶ برابر سریع‌تر**<br> |
+| **تاریخچه ۱ ساله** | ۳,۶۵۰ ورودی | حدود ۱۰ ورودی تثبیت‌شده | **۹۷٪ کاهش حجم**<br> |
+| **تناقض موجودیت‌ها** | تکراری‌ها باقی می‌مانند | حل خودکار تناقضات | داده‌های تمیز
+
+ |
+| **پرس‌وجوی زمانی** | ❌ غیرممکن | ✅ نیتیو و داخلی | قابلیت منحصر‌به‌فرد
+
+ |
+
+---
+
+## 🐳 راه اندازی با داکر
+
+```bash
+# اجرای تمام سرویس‌ها (Neo4j, Redis, LibSQL)
+make services-up
+
+# اجرای تست‌های یکپارچه‌سازی
+make test-integration
+
+# متوقف کردن سرویس‌ها
+make services-down
+
+```
+
+برای مشاهده تنظیمات کامل به فایل [docker-compose.yml](https://www.google.com/search?q=../docker-compose.yml) مراجعه کنید.
+
+---
+
+## 📚 مستندات
+
+* **[شروع کار](https://www.google.com/search?q=getting-started/installation.md)** - راهنمای نصب، شروع سریع و پیکربندی
+
+
+* **[مفاهیم پایه](https://www.google.com/search?q=concepts/overview.md)** - درک نحوه عملکرد GraphMem
+
+
+* **[ساخت عامل‌ها](https://www.google.com/search?q=agents/guide.md)** - راهنمای جامع ساخت عامل‌های هوش مصنوعی
+
+
+* **[محیط عملیاتی](https://www.google.com/search?q=production/architecture.md)** - استقرار در مقیاس وسیع با اطمینان خاطر
+
+
+
+---
+
+## 🤝 مشارکت
+
+ما در حال ساخت آینده حافظه هوش مصنوعی هستیم. به ما بپیوندید!
+
+* 🐛 [گزارش باگ‌ها](https://www.google.com/search?q=https://github.com/flancast90/GraphMem-go/issues)
+
+* 💡 [درخواست ویژگی‌های جدید](https://www.google.com/search?q=https://github.com/flancast90/GraphMem-go/issues)
+
+* 🔀 [ارسال PR ها](https://www.google.com/search?q=https://github.com/flancast90/GraphMem-go/pulls)
+
+
+---
+
+**GraphMem-Go** - پیاده‌سازی GraphMem به زبان Go
+
+*"به عامل‌های هوش مصنوعی خود حافظه‌ای را بدهید که شایسته آن هستند."*
+
+
+================================
+
 # 🧠 GraphMem-Go
 
 ## **The Human Brain for Your AI Agents**
