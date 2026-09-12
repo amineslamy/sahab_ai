@@ -24,6 +24,7 @@ github.com/google/uuid
 github.com/joho/godotenv
 # github.com/ledongthuc/pdf v0.0.0-20260907135840-6c8c28e0e8a0
 ## explicit; go 1.24.1
+github.com/ledongthuc/pdf
 # github.com/neo4j/neo4j-go-driver/v5 v5.27.0
 ## explicit; go 1.18
 github.com/neo4j/neo4j-go-driver/v5/neo4j
@@ -52,6 +53,7 @@ github.com/neo4j/neo4j-go-driver/v5/neo4j/log
 github.com/neo4j/neo4j-go-driver/v5/neo4j/notifications
 # github.com/nguyenthenguyen/docx v0.0.0-20230621112118-9c8e795a11db
 ## explicit; go 1.16
+github.com/nguyenthenguyen/docx
 # github.com/redis/go-redis/v9 v9.7.0
 ## explicit; go 1.18
 github.com/redis/go-redis/v9
